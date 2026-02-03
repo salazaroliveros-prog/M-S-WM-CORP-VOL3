@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard - Constructora WM/M&S</title>
+    <link rel="stylesheet" href="css/estilos.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --azul-marino: #1a237e;
+            --mostaza-oscuro: #d4a017;
+            --gris-oscuro: #333;
+            --blanco: #fff;
+            --verde: #4caf50;
+            --rojo: #f44336;
+            --amarillo: #ffc107;
+        }
+
+        .dashboard-container {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            color: var(--blanco);
+            overflow-x: hidden;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(90deg, var(--azul-marino) 0%, #283593 100%);
+            color: var(--mostaza-oscuro);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--mostaza-oscuro);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+            border-radius: 8px;
+            border: 2px solid var(--mostaza-oscuro);
+        }
+
+        .header-title h1 {
+            font-size: 1.8rem;
+            margin: 0;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .header-title .slogan {
+            font-size: 0.9rem;
+            color: #ffd54f;
+            font-style: italic;
+            margin-top: 3px;
+        }
+
+        .dashboard-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .control-group label {
+            color: var(--mostaza-oscuro);
+            font-weight: bold;
+            min-width: 120px;
+        }
+
+        .control-group select, .control-group input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background: #222;
+            color: white;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .chart-card {
+            background: rgba(30, 30, 40, 0.9);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .chart-title {
+            color: var(--mostaza-oscuro);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 8px;
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #ffd54f;
+        }
+
+        .kpi-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .kpi-trend {
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+
+        .kpi-trend.positive {
+            color: var(--verde);
+        }
+
+        .kpi-trend.negative {
+            color: var(--rojo);
+        }
+
+        .dashboard-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px;
+        }
+
+        .menu-item {
+            background: linear-gradient(135deg, #283593 0%, #1a237e 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .menu-item:hover {
+            background: linear-gradient(135deg, #303f9f 0%, #283593 100%);
+            transform: scale(1.05);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .menu-icon {
+            font-size: 2rem;
+            color: var(--mostaza-oscuro);
+        }
+
+        .menu-text {
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .time-display {
+            font-size: 1.1rem;
+            color: #ffd54f;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .alert-panel {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid var(--rojo);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px;
+        }
+
+        .alert-title {
+            color: var(--rojo);
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-item {
+            padding: 8px;
+            border-bottom: 1px solid rgba(244, 67, 54, 0.3);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .view-toggle {
+            display: inline-flex;
+            gap: 10px;
+            margin-right: 10px;
+            flex-wrap: wrap;
+        }
+
+        .bi-dashboard {
+            padding: 20px;
+        }
+
+        #reportContainer {
+            min-height: 420px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px dashed rgba(212, 160, 23, 0.45);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffd54f;
+            margin-bottom: 20px;
+        }
+
+        .realtime-kpis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin: 15px 0 25px;
+        }
+
+        .realtime-kpis .kpi {
+            background: rgba(30, 30, 40, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 14px;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .predictive-alerts {
+            background: rgba(30, 30, 40, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .predictive-alerts h4 {
+            margin: 0 0 10px;
+            color: var(--mostaza-oscuro);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .control-group {
+                min-width: 100%;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="dashboard-container">
+    <!-- Encabezado -->
+    <header class="dashboard-header">
+        <div class="logo-section">
+            <img src="logo.png" alt="Logo M&S" class="logo-img" id="logoDashboard">
+            <div class="header-title">
+                <h1>CONSTRUCTORA WM/M&S</h1>
+                <div class="slogan">EDIFICANDO EL FUTURO</div>
+            </div>
+        </div>
+        <div class="time-display" id="timeDisplay">Cargando...</div>
+        <div>
+            <div class="view-toggle">
+                <button class="btn btn-secondary" id="showDashboardBtn" onclick="setDashboardView('dashboard', true)">
+                    <i class="fas fa-chart-pie"></i> Dashboard
+                </button>
+                <button class="btn btn-secondary" id="showAnalyticsBtn" onclick="setDashboardView('analytics', true)">
+                    <i class="fas fa-chart-line"></i> Analytics
+                </button>
+            </div>
+            <button class="btn btn-primary" onclick="syncDashboard()">
+                <i class="fas fa-sync-alt"></i> Sincronizar
+            </button>
+            <button class="btn btn-warning" onclick="printDashboard()">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+            <button class="btn btn-danger" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </div>
+    </header>
+
+    <div id="dashboardView">
+
+    <!-- Controles de Filtro -->
+    <div class="dashboard-controls">
+        <div class="control-group">
+            <label for="projectFilter"><i class="fas fa-project-diagram"></i> Proyecto:</label>
+            <select id="projectFilter" onchange="updateCharts()">
+                <option value="all">Todos los Proyectos</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label for="dateFrom"><i class="fas fa-calendar-alt"></i> Desde:</label>
+            <input type="date" id="dateFrom" onchange="updateCharts()">
+        </div>
+        <div class="control-group">
+            <label for="dateTo"><i class="fas fa-calendar-alt"></i> Hasta:</label>
+            <input type="date" id="dateTo" onchange="updateCharts()">
+        </div>
+        <div class="control-group">
+            <button class="btn btn-success" onclick="applyFilters()">
+                <i class="fas fa-filter"></i> Aplicar Filtros
+            </button>
+            <button class="btn btn-secondary" onclick="resetFilters()">
+                <i class="fas fa-redo"></i> Limpiar
+            </button>
+        </div>
+    </div>
+
+    <!-- KPIs Principales -->
+    <div class="kpi-container">
+        <div class="kpi-card">
+            <div class="kpi-label">PROYECTOS ACTIVOS</div>
+            <div class="kpi-value" id="kpiProjects">0</div>
+            <div class="kpi-trend positive">+2 este mes</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">INGRESOS TOTALES</div>
+            <div class="kpi-value" id="kpiIncome">Q 0.00</div>
+            <div class="kpi-trend positive">+15% vs mes anterior</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">GASTOS TOTALES</div>
+            <div class="kpi-value" id="kpiExpenses">Q 0.00</div>
+            <div class="kpi-trend negative">+8% vs mes anterior</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">UTILIDAD NETA</div>
+            <div class="kpi-value" id="kpiProfit">Q 0.00</div>
+            <div class="kpi-trend positive">+12% vs mes anterior</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">AVANCE FÍSICO PROMEDIO</div>
+            <div class="kpi-value" id="kpiProgress">0%</div>
+            <div class="kpi-trend positive">+5% este mes</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">TRABAJADORES ACTIVOS</div>
+            <div class="kpi-value" id="kpiWorkers">0</div>
+            <div class="kpi-trend positive">+3 esta semana</div>
+        </div>
+    </div>
+
+    <!-- Menú de Acceso Rápido -->
+    <div class="dashboard-menu">
+        <a href="proyectos.html" class="menu-item">
+            <i class="fas fa-project-diagram menu-icon"></i>
+            <div class="menu-text">PROYECTOS</div>
+        </a>
+        <a href="presupuestos.html" class="menu-item">
+            <i class="fas fa-calculator menu-icon"></i>
+            <div class="menu-text">PRESUPUESTOS</div>
+        </a>
+        <a href="inicio.html" class="menu-item">
+            <i class="fas fa-home menu-icon"></i>
+            <div class="menu-text">INICIO</div>
+        </a>
+        <a href="seguimiento.html" class="menu-item">
+            <i class="fas fa-chart-line menu-icon"></i>
+            <div class="menu-text">SEGUIMIENTO</div>
+        </a>
+        <a href="compras.html" class="menu-item">
+            <i class="fas fa-shopping-cart menu-icon"></i>
+            <div class="menu-text">COMPRAS</div>
+        </a>
+        <a href="rrhh.html" class="menu-item">
+            <i class="fas fa-users menu-icon"></i>
+            <div class="menu-text">RECURSOS HUMANOS</div>
+        </a>
+        <a href="cotizacion.html" class="menu-item">
+            <i class="fas fa-file-invoice-dollar menu-icon"></i>
+            <div class="menu-text">COTIZACIÓN RÁPIDA</div>
+        </a>
+        <a href="asistencia.html" class="menu-item">
+            <i class="fas fa-user-clock menu-icon"></i>
+            <div class="menu-text">ASISTENCIA</div>
+        </a>
+    </div>
+
+    <!-- Panel de Alertas -->
+    <div class="alert-panel">
+        <div class="alert-title">
+            <i class="fas fa-exclamation-triangle"></i>
+            ALERTAS Y NOTIFICACIONES
+        </div>
+        <div id="alertsList">
+            <div class="alert-item">
+                <span>Vencimiento de renta en 2 días - Proyecto Casa Jardín</span>
+                <button class="btn btn-sm btn-warning" onclick="viewAlert(1)">Ver</button>
+            </div>
+            <div class="alert-item">
+                <span>Sobrecosto detectado en Cimentación - Proyecto Centro Comercial</span>
+                <button class="btn btn-sm btn-danger" onclick="viewAlert(2)">Revisar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos del Dashboard -->
+    <div class="dashboard-grid">
+        <!-- Gráfico 1: Avance de Proyectos -->
+        <div class="chart-card">
+            <div class="chart-title">
+                <span>AVANCE DE PROYECTOS</span>
+                <span class="chart-subtitle">Físico vs Financiero</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="projectProgressChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Gráfico 2: Flujo de Caja -->
+        <div class="chart-card">
+            <div class="chart-title">
+                <span>FLUJO DE CAJA MENSUAL</span>
+                <span class="chart-subtitle">Ingresos vs Gastos</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="cashFlowChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Gráfico 3: Distribución de Gastos -->
+        <div class="chart-card">
+            <div class="chart-title">
+                <span>DISTRIBUCIÓN DE GASTOS</span>
+                <span class="chart-subtitle">Por Categoría</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="expenseDistributionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Gráfico 4: Estado de Proyectos -->
+        <div class="chart-card">
+            <div class="chart-title">
+                <span>ESTADO DE PROYECTOS</span>
+                <span class="chart-subtitle">Por Etapa</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="projectStatusChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Gráfico 5: Métricas de RRHH -->
+        <div class="chart-card">
+            <div class="chart-title">
+                <span>MÉTRICAS DE PERSONAL</span>
+                <span class="chart-subtitle">Asistencia y Productividad</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="hrMetricsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Gráfico 6: Rentabilidad por Proyecto -->
+        <div class="chart-card">
+            <div class="chart-title">
+                <span>RENTABILIDAD POR PROYECTO</span>
+                <span class="chart-subtitle">Margen de Utilidad</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="profitabilityChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div style="padding: 20px; text-align: center;">
+        <button class="btn btn-primary" onclick="saveDashboardData()" style="margin-right: 10px;">
+            <i class="fas fa-save"></i> Guardar Localmente
+        </button>
+        <button class="btn btn-success" onclick="exportDashboard()" style="margin-right: 10px;">
+            <i class="fas fa-download"></i> Exportar Reporte
+        </button>
+        <button class="btn btn-danger" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Salir al Inicio
+        </button>
+    </div>
+
+    </div>
+
+    <div id="analyticsView" style="display:none;">
+        <!-- Vista integrada de Analytics (antes dashboard -analytics.html) -->
+        <div class="bi-dashboard">
+            <div id="reportContainer">
+                <div style="text-align:center; max-width: 720px; padding: 20px;">
+                    <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 8px;">Power BI Embedded</div>
+                    <div style="opacity: .9;">Aquí se incrustará el reporte (pendiente de configurar embed/token).</div>
+                </div>
+            </div>
+
+            <div class="realtime-kpis">
+                <div class="kpi" data-metric="roi">ROI: 24.5%</div>
+                <div class="kpi" data-metric="cashflow">Flujo: Q 1.2M</div>
+                <div class="kpi" data-metric="productivity">Productividad: 87%</div>
+                <div class="kpi" data-metric="safety">Seguridad: 99.8%</div>
+            </div>
+
+            <div class="predictive-alerts">
+                <h4>Alertas Predictivas</h4>
+                <div id="predictiveWarnings">
+                    <div style="opacity: .85;">(Placeholder) Conecta aquí el motor de alertas predictivas.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let dashboardData = {
+            projects: [],
+            finances: [],
+            alerts: [],
+            charts: {}
+        };
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            loadDashboardData();
+            initializeCharts();
+            loadProjectFilters();
+
+            // Soporte de navegación por hash: #analytics o #dashboard
+            window.addEventListener('hashchange', applyHashView);
+            applyHashView();
+        });
+
+        function applyHashView() {
+            const hash = (window.location.hash || '').replace('#', '').toLowerCase();
+            if (hash === 'analytics') {
+                setDashboardView('analytics', false);
+                return;
+            }
+            setDashboardView('dashboard', false);
+        }
+
+        function setDashboardView(view, updateHash) {
+            const dashboard = document.getElementById('dashboardView');
+            const analytics = document.getElementById('analyticsView');
+            const btnDashboard = document.getElementById('showDashboardBtn');
+            const btnAnalytics = document.getElementById('showAnalyticsBtn');
+
+            if (view === 'analytics') {
+                if (updateHash) window.location.hash = 'analytics';
+                dashboard.style.display = 'none';
+                analytics.style.display = 'block';
+                btnDashboard.classList.remove('btn-primary');
+                btnDashboard.classList.add('btn-secondary');
+                btnAnalytics.classList.remove('btn-secondary');
+                btnAnalytics.classList.add('btn-primary');
+                return;
+            }
+
+            if (updateHash) window.location.hash = 'dashboard';
+            dashboard.style.display = 'block';
+            analytics.style.display = 'none';
+            btnAnalytics.classList.remove('btn-primary');
+            btnAnalytics.classList.add('btn-secondary');
+            btnDashboard.classList.remove('btn-secondary');
+            btnDashboard.classList.add('btn-primary');
+        }
+
+        // Actualizar hora y fecha
+        function updateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            document.getElementById('timeDisplay').textContent = now.toLocaleDateString('es-GT', options);
+        }
+
+        // Cargar datos del dashboard
+        function loadDashboardData() {
+            // Cargar datos del localStorage
+            const savedData = localStorage.getItem('dashboardData');
+            if (savedData) {
+                dashboardData = JSON.parse(savedData);
+                updateKPIs();
+                updateCharts();
+            } else {
+                // Datos de ejemplo
+                dashboardData = {
+                    projects: [
+                        { id: 1, name: "Casa Jardín", progress: 65, budget: 500000, spent: 325000 },
+                        { id: 2, name: "Centro Comercial", progress: 30, budget: 2500000, spent: 750000 },
+                        { id: 3, name: "Bodega Industrial", progress: 85, budget: 800000, spent: 680000 }
+                    ],
+                    finances: {
+                        income: 1250000,
+                        expenses: 850000,
+                        profit: 400000
+                    },
+                    alerts: [
+                        { id: 1, type: "warning", message: "Vencimiento de renta en 2 días", project: "Casa Jardín" },
+                        { id: 2, type: "danger", message: "Sobrecosto detectado en Cimentación", project: "Centro Comercial" }
+                    ]
+                };
+                updateKPIs();
+            }
+        }
+
+        // Actualizar KPIs
+        function updateKPIs() {
+            document.getElementById('kpiProjects').textContent = dashboardData.projects.length;
+            document.getElementById('kpiIncome').textContent = `Q ${dashboardData.finances.income.toLocaleString('es-GT', {minimumFractionDigits: 2})}`;
+            document.getElementById('kpiExpenses').textContent = `Q ${dashboardData.finances.expenses.toLocaleString('es-GT', {minimumFractionDigits: 2})}`;
+            document.getElementById('kpiProfit').textContent = `Q ${dashboardData.finances.profit.toLocaleString('es-GT', {minimumFractionDigits: 2})}`;
+            
+            const avgProgress = dashboardData.projects.reduce((sum, p) => sum + p.progress, 0) / dashboardData.projects.length;
+            document.getElementById('kpiProgress').textContent = `${avgProgress.toFixed(1)}%`;
+            
+            document.getElementById('kpiWorkers').textContent = "15"; // Ejemplo
+        }
+
+        // Inicializar gráficos
+        function initializeCharts() {
+            // Gráfico de Avance de Proyectos
+            const progressCtx = document.getElementById('projectProgressChart').getContext('2d');
+            dashboardData.charts.progress = new Chart(progressCtx, {
+                type: 'bar',
+                data: {
+                    labels: dashboardData.projects.map(p => p.name),
+                    datasets: [
+                        {
+                            label: 'Avance Físico (%)',
+                            data: dashboardData.projects.map(p => p.progress),
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Avance Financiero (%)',
+                            data: dashboardData.projects.map(p => (p.spent / p.budget) * 100),
+                            backgroundColor: 'rgba(255, 206, 86, 0.7)',
+                            borderColor: 'rgba(255, 206, 86, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Gráfico de Flujo de Caja
+            const cashFlowCtx = document.getElementById('cashFlowChart').getContext('2d');
+            dashboardData.charts.cashFlow = new Chart(cashFlowCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                    datasets: [
+                        {
+                            label: 'Ingresos',
+                            data: [1200000, 1350000, 1100000, 1250000, 1400000, 1300000],
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Gastos',
+                            data: [850000, 900000, 800000, 950000, 850000, 900000],
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Gráfico de Distribución de Gastos
+            const expenseCtx = document.getElementById('expenseDistributionChart').getContext('2d');
+            dashboardData.charts.expense = new Chart(expenseCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Materiales', 'Mano de Obra', 'Equipos', 'Administrativos', 'Imprevistos'],
+                    datasets: [{
+                        data: [45, 30, 15, 7, 3],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Actualizar gráficos según filtros
+        function updateCharts() {
+            const projectFilter = document.getElementById('projectFilter').value;
+            // Aquí iría la lógica para filtrar datos y actualizar gráficos
+            console.log('Actualizando gráficos con filtro:', projectFilter);
+        }
+
+        // Cargar proyectos en el filtro
+        function loadProjectFilters() {
+            const select = document.getElementById('projectFilter');
+            select.innerHTML = '<option value="all">Todos los Proyectos</option>';
+            
+            // Cargar proyectos del localStorage o de ejemplo
+            const projects = dashboardData.projects || [];
+            projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = project.name;
+                select.appendChild(option);
+            });
+        }
+
+        // Aplicar filtros
+        function applyFilters() {
+            updateCharts();
+            alert('Filtros aplicados correctamente');
+        }
+
+        // Reiniciar filtros
+        function resetFilters() {
+            document.getElementById('projectFilter').value = 'all';
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            updateCharts();
+        }
+
+        // Sincronizar dashboard
+        function syncDashboard() {
+            showLoading('Sincronizando con la nube...');
+            // Simular sincronización
+            setTimeout(() => {
+                hideLoading();
+                alert('Dashboard sincronizado exitosamente');
+            }, 1500);
+        }
+
+        // Guardar datos localmente
+        function saveDashboardData() {
+            localStorage.setItem('dashboardData', JSON.stringify(dashboardData));
+            alert('Datos guardados localmente');
+        }
+
+        // Imprimir dashboard
+        function printDashboard() {
+            window.print();
+        }
+
+        // Exportar reporte
+        function exportDashboard() {
+            const dataStr = JSON.stringify(dashboardData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const exportFileDefaultName = `reporte_dashboard_${new Date().toISOString().split('T')[0]}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            alert('Reporte exportado exitosamente');
+        }
+
+        // Ver alerta
+        function viewAlert(alertId) {
+            alert(`Viendo detalles de la alerta #${alertId}`);
+            // Aquí se abriría un modal con detalles
+        }
+
+        // Cerrar sesión
+        function logout() {
+            if (confirm('¿Está seguro de salir del Dashboard?')) {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Funciones de utilidad
+        function showLoading(message) {
+            // Implementar loading
+            console.log('Loading:', message);
+        }
+
+        function hideLoading() {
+            // Ocultar loading
+            console.log('Loading hidden');
+        }
+    </script>
+</body>
+</html>

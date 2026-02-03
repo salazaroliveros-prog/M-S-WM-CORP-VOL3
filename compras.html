@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&S Constructor - Gestión de Compras</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .supplier-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--accent-gold);
+        }
+        
+        .supplier-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .supplier-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+        
+        .supplier-rating {
+            color: var(--warning);
+            font-size: 0.9rem;
+        }
+        
+        .material-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .material-card {
+            background: var(--gray-light);
+            padding: 1rem;
+            border-radius: var(--radius);
+            border: 1px solid #ddd;
+        }
+        
+        .material-name {
+            font-weight: 600;
+            color: var(--gray-dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .material-stock {
+            font-size: 0.9rem;
+            color: var(--gray-medium);
+        }
+        
+        .material-stock.low {
+            color: var(--danger);
+            font-weight: 600;
+        }
+        
+        .order-form {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        
+        .order-item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .price-comparison {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            margin-top: 1.5rem;
+        }
+        
+        .price-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .price-table th {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        
+        .price-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        .price-table tr:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .best-price {
+            background: rgba(40, 167, 69, 0.1);
+            font-weight: 600;
+        }
+        
+        .quote-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        
+        .quote-status.pending {
+            background: rgba(255, 193, 7, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+        
+        .quote-status.sent {
+            background: rgba(23, 162, 184, 0.2);
+            color: var(--info);
+            border: 1px solid var(--info);
+        }
+        
+        .quote-status.accepted {
+            background: rgba(40, 167, 69, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        
+        .quote-status.rejected {
+            background: rgba(220, 53, 69, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+        
+        .whatsapp-btn {
+            background: #25D366;
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: 0.5rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .whatsapp-btn:hover {
+            background: #128C7E;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div>
+                    <div class="logo-small">CONSTRUCTORA WM/M&S</div>
+                    <div class="slogan-small">EDIFICANDO EL FUTURO</div>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="datetime" id="currentDateTime"></div>
+                <button class="btn btn-danger btn-small" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Filtros principales -->
+            <div class="filters-container">
+                <h2 class="section-title">Gestión de Compras y Proveedores</h2>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="projectFilter">Proyecto</label>
+                        <select id="projectFilter">
+                            <option value="">Todos los proyectos</option>
+                            <option value="all_active">Todos los proyectos activos</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="supplierFilter">Proveedor</label>
+                        <select id="supplierFilter">
+                            <option value="">Todos los proveedores</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="materialFilter">Material</label>
+                        <select id="materialFilter">
+                            <option value="">Todos los materiales</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="statusFilter">Estado de Pedido</label>
+                        <select id="statusFilter">
+                            <option value="">Todos los estados</option>
+                            <option value="pending">Pendiente</option>
+                            <option value="quoted">Cotizado</option>
+                            <option value="ordered">Pedido</option>
+                            <option value="delivered">Entregado</option>
+                            <option value="cancelled">Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen de compras -->
+            <div class="cards-container">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Pedidos Pendientes</div>
+                        <div class="card-value" id="pendingOrders">0</div>
+                    </div>
+                    <div class="card-footer">
+                        Esperando cotización o aprobación
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Stock Crítico</div>
+                        <div class="card-value" id="criticalStock">0</div>
+                    </div>
+                    <div class="card-footer">
+                        Materiales con stock bajo
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Compras del Mes</div>
+                        <div class="card-value" id="monthPurchases">Q 0.00</div>
+                    </div>
+                    <div class="card-footer">
+                        Total de compras realizadas
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Ahorro por Comparación</div>
+                        <div class="card-value" id="savings">Q 0.00</div>
+                    </div>
+                    <div class="card-footer">
+                        Comparando proveedores
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pestañas de funcionalidades -->
+            <div class="tabs-container mt-4">
+                <div class="tabs-header">
+                    <button class="tab-btn active" data-tab="suppliers">Proveedores</button>
+                    <button class="tab-btn" data-tab="materials">Materiales y Stock</button>
+                    <button class="tab-btn" data-tab="orders">Pedidos</button>
+                    <button class="tab-btn" data-tab="quotes">Cotizaciones</button>
+                    <button class="tab-btn" data-tab="new-order">Nuevo Pedido</button>
+                </div>
+                
+                <!-- Contenido de pestañas -->
+                <div class="tabs-content">
+                    <!-- Pestaña de Proveedores -->
+                    <div class="tab-pane active" id="suppliers-tab">
+                        <div class="form-section">
+                            <div class="section-header">
+                                <h3 class="section-title">Catálogo de Proveedores</h3>
+                                <button class="btn btn-primary btn-small" id="addSupplierBtn">
+                                    <i class="fas fa-plus"></i> Agregar Proveedor
+                                </button>
+                            </div>
+                            
+                            <div id="suppliersList">
+                                <!-- Proveedores cargados dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pestaña de Materiales y Stock -->
+                    <div class="tab-pane" id="materials-tab">
+                        <div class="form-section">
+                            <h3 class="section-title">Inventario de Materiales</h3>
+                            
+                            <div class="filter-row mb-3">
+                                <div class="filter-group">
+                                    <label for="categoryFilter">Categoría</label>
+                                    <select id="categoryFilter">
+                                        <option value="">Todas las categorías</option>
+                                        <option value="cemento">Cemento y Agregados</option>
+                                        <option value="acero">Acero y Metales</option>
+                                        <option value="madera">Madera</option>
+                                        <option value="electricidad">Material Eléctrico</option>
+                                        <option value="plomeria">Plomería</option>
+                                        <option value="otros">Otros</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="stockFilter">Estado de Stock</label>
+                                    <select id="stockFilter">
+                                        <option value="">Todo el stock</option>
+                                        <option value="critical">Crítico (< 10%)</option>
+                                        <option value="low">Bajo (10-30%)</option>
+                                        <option value="normal">Normal (> 30%)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="table-container">
+                                <div class="table-responsive">
+                                    <table class="data-table" id="materialsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Material</th>
+                                                <th>Categoría</th>
+                                                <th>Stock Actual</th>
+                                                <th>Stock Mínimo</th>
+                                                <th>Unidad</th>
+                                                <th>Último Precio</th>
+                                                <th>Proveedor</th>
+                                                <th>Estado</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Materiales cargados dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pestaña de Pedidos -->
+                    <div class="tab-pane" id="orders-tab">
+                        <div class="form-section">
+                            <h3 class="section-title">Historial de Pedidos</h3>
+                            
+                            <div class="table-container">
+                                <div class="table-responsive">
+                                    <table class="data-table" id="ordersTable">
+                                        <thead>
+                                            <tr>
+                                                <th># Pedido</th>
+                                                <th>Fecha</th>
+                                                <th>Proyecto</th>
+                                                <th>Proveedor</th>
+                                                <th>Materiales</th>
+                                                <th>Total</th>
+                                                <th>Estado</th>
+                                                <th>Fecha Entrega</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Pedidos cargados dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pestaña de Cotizaciones -->
+                    <div class="tab-pane" id="quotes-tab">
+                        <div class="form-section">
+                            <h3 class="section-title">Cotizaciones Recibidas</h3>
+                            
+                            <div id="quotesList">
+                                <!-- Cotizaciones cargadas dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pestaña de Nuevo Pedido -->
+                    <div class="tab-pane" id="new-order-tab">
+                        <div class="form-section">
+                            <h3 class="section-title">Crear Nuevo Pedido</h3>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="orderProject">Proyecto *</label>
+                                    <select id="orderProject">
+                                        <option value="">Seleccionar proyecto</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="orderSupplier">Proveedor</label>
+                                    <select id="orderSupplier">
+                                        <option value="">Seleccionar proveedor</option>
+                                        <option value="new">+ Agregar nuevo proveedor</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="orderUrgency">Urgencia</label>
+                                    <select id="orderUrgency">
+                                        <option value="normal">Normal (5-7 días)</option>
+                                        <option value="urgent">Urgente (1-3 días)</option>
+                                        <option value="critical">Crítico (24 horas)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="orderDeliveryDate">Fecha Requerida</label>
+                                    <input type="date" id="orderDeliveryDate">
+                                </div>
+                            </div>
+                            
+                            <!-- Lista de materiales para el pedido -->
+                            <div class="order-form mt-3">
+                                <h4>Materiales del Pedido</h4>
+                                
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="addMaterial">Agregar Material</label>
+                                        <select id="addMaterial">
+                                            <option value="">Seleccionar material</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="addQuantity">Cantidad</label>
+                                        <input type="number" id="addQuantity" min="1" value="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="addUnitPrice">Precio Unitario (Q)</label>
+                                        <input type="number" id="addUnitPrice" step="0.01" min="0" placeholder="0.00">
+                                    </div>
+                                    <div class="form-group">
+                                        <button class="btn btn-primary" id="addToOrderBtn" style="margin-top: 1.5rem;">
+                                            <i class="fas fa-plus"></i> Agregar al Pedido
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div id="orderItemsList" class="mt-3">
+                                    <!-- Ítems del pedido se agregarán aquí -->
+                                </div>
+                                
+                                <!-- Resumen del pedido -->
+                                <div class="cost-summary mt-3">
+                                    <div class="summary-row">
+                                        <span>Subtotal:</span>
+                                        <span id="orderSubtotal">Q 0.00</span>
+                                    </div>
+                                    <div class="summary-row">
+                                        <span>IVA (12%):</span>
+                                        <span id="orderIVA">Q 0.00</span>
+                                    </div>
+                                    <div class="summary-row total">
+                                        <span>Total del Pedido:</span>
+                                        <span id="orderTotal">Q 0.00</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Botones de acción -->
+                                <div class="text-center mt-3">
+                                    <button class="btn btn-secondary" id="clearOrderBtn">
+                                        <i class="fas fa-times"></i> Limpiar Pedido
+                                    </button>
+                                    <button class="btn btn-success" id="saveOrderBtn">
+                                        <i class="fas fa-save"></i> Guardar Pedido
+                                    </button>
+                                    <button class="btn btn-primary" id="sendQuoteRequestBtn">
+                                        <i class="fab fa-whatsapp"></i> Solicitar Cotización
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navegación -->
+            <div class="navigation">
+                <a href="inicio.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="nav-title">INICIO</div>
+                    <div class="nav-desc">Registro de ingresos/gastos</div>
+                </a>
+
+                <a href="proyectos.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="nav-title">PROYECTOS</div>
+                    <div class="nav-desc">Gestión de proyectos</div>
+                </a>
+
+                <a href="presupuestos.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <div class="nav-title">PRESUPUESTOS</div>
+                    <div class="nav-desc">Cuantificación y costos</div>
+                </a>
+
+                <a href="seguimiento.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="nav-title">SEGUIMIENTO</div>
+                    <div class="nav-desc">Control físico y financiero</div>
+                </a>
+
+                <a href="dashboard.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="nav-title">DASHBOARD</div>
+                    <div class="nav-desc">Tablero principal</div>
+                </a>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <button class="btn btn-secondary btn-small" id="exportPurchasesBtn">
+                        <i class="fas fa-file-export"></i> Exportar
+                    </button>
+                    <button class="btn btn-primary btn-small" id="syncPurchasesBtn">
+                        <i class="fas fa-sync-alt"></i> Sincronizar
+                    </button>
+                    <button class="btn btn-success btn-small" id="printPurchaseOrderBtn">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                </div>
+                <div class="copyright">
+                    © 2024 CONSTRUCTORA WM/M&S - "EDIFICANDO EL FUTURO"
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal para proveedores -->
+    <div class="modal" id="supplierModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="supplierModalTitle">Nuevo Proveedor</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="supplierName">Nombre del Proveedor *</label>
+                        <input type="text" id="supplierName" placeholder="Ej: Materiales de Construcción S.A.">
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierContact">Persona de Contacto</label>
+                        <input type="text" id="supplierContact" placeholder="Nombre del contacto">
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierPhone">Teléfono *</label>
+                        <input type="tel" id="supplierPhone" placeholder="Ej: 12345678">
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierWhatsApp">WhatsApp</label>
+                        <input type="tel" id="supplierWhatsApp" placeholder="Número de WhatsApp">
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierEmail">Email</label>
+                        <input type="email" id="supplierEmail" placeholder="proveedor@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierAddress">Dirección</label>
+                        <input type="text" id="supplierAddress" placeholder="Dirección del proveedor">
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierSpecialty">Especialidad</label>
+                        <select id="supplierSpecialty" multiple style="height: 100px;">
+                            <option value="cemento">Cemento y agregados</option>
+                            <option value="acero">Acero y metales</option>
+                            <option value="madera">Madera</option>
+                            <option value="electricidad">Material eléctrico</option>
+                            <option value="plomeria">Plomería</option>
+                            <option value="pintura">Pintura</option>
+                            <option value="herramientas">Herramientas y equipo</option>
+                            <option value="alquiler">Alquiler de equipo</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierRating">Calificación (1-5)</label>
+                        <select id="supplierRating">
+                            <option value="1">★☆☆☆☆ - Muy Malo</option>
+                            <option value="2">★★☆☆☆ - Regular</option>
+                            <option value="3">★★★☆☆ - Bueno</option>
+                            <option value="4">★★★★☆ - Muy Bueno</option>
+                            <option value="5">★★★★★ - Excelente</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="supplierNotes">Notas</label>
+                        <textarea id="supplierNotes" rows="3" placeholder="Observaciones sobre el proveedor"></textarea>
+                    </div>
+                </div>
+                <div class="text-right mt-3">
+                    <button class="btn btn-secondary" id="cancelSupplierBtn">Cancelar</button>
+                    <button class="btn btn-success" id="saveSupplierBtn">Guardar Proveedor</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/database.js"></script>
+    <script>
+        // Variables globales
+        let suppliersData = [];
+        let materialsData = [];
+        let purchasesData = [];
+        let projectsData = [];
+        let currentOrderItems = [];
+        let editingSupplierId = null;
+        
+        // Datos iniciales de ejemplo
+        const INITIAL_SUPPLIERS = [
+            {
+                id: 'SUP001',
+                name: 'Materiales de Construcción S.A.',
+                contact: 'Juan Pérez',
+                phone: '12345678',
+                whatsapp: '12345678',
+                email: 'ventas@materiales.com',
+                address: 'Zona 1, Ciudad',
+                specialty: ['cemento', 'acero', 'madera'],
+                rating: 4,
+                notes: 'Proveedor confiable, entrega puntual',
+                materials: [
+                    { id: 'MAT001', name: 'Cemento', unit: 'saco', lastPrice: 45.00 },
+                    { id: 'MAT002', name: 'Varilla 3/8"', unit: 'quintal', lastPrice: 280.00 },
+                    { id: 'MAT003', name: 'Arena', unit: 'm3', lastPrice: 120.00 }
+                ]
+            },
+            {
+                id: 'SUP002',
+                name: 'Alquiler de Maquinaria GT',
+                contact: 'María González',
+                phone: '87654321',
+                whatsapp: '87654321',
+                email: 'alquiler@maquinaria.com',
+                address: 'Zona 10, Ciudad',
+                specialty: ['alquiler', 'herramientas'],
+                rating: 4,
+                notes: 'Equipo en buen estado, precios competitivos',
+                materials: [
+                    { id: 'MAT101', name: 'Retroexcavadora', unit: 'día', lastPrice: 850.00 },
+                    { id: 'MAT102', name: 'Vibrador de concreto', unit: 'día', lastPrice: 75.00 }
+                ]
+            }
+        ];
+        
+        const INITIAL_MATERIALS = [
+            {
+                id: 'MAT001',
+                name: 'Cemento',
+                category: 'cemento',
+                currentStock: 45,
+                minStock: 10,
+                unit: 'saco',
+                lastPrice: 45.00,
+                supplierId: 'SUP001',
+                supplierName: 'Materiales de Construcción S.A.',
+                status: 'normal'
+            },
+            {
+                id: 'MAT002',
+                name: 'Varilla 3/8"',
+                category: 'acero',
+                currentStock: 8,
+                minStock: 5,
+                unit: 'quintal',
+                lastPrice: 280.00,
+                supplierId: 'SUP001',
+                supplierName: 'Materiales de Construcción S.A.',
+                status: 'low'
+            },
+            {
+                id: 'MAT003',
+                name: 'Arena',
+                category: 'cemento',
+                currentStock: 15,
+                minStock: 3,
+                unit: 'm3',
+                lastPrice: 120.00,
+                supplierId: 'SUP001',
+                supplierName: 'Materiales de Construcción S.A.',
+                status: 'normal'
+            },
+            {
+                id: 'MAT004',
+                name: 'Ladrillo',
+                category: 'cemento',
+                currentStock: 2500,
+                minStock: 1000,
+                unit: 'unidad',
+                lastPrice: 1.20,
+                supplierId: 'SUP003',
+                supplierName: 'Ladrillera Central',
+                status: 'normal'
+            }
+        ];
+        
+        // Actualizar fecha y hora
+        function updateDateTime() {
+            const now = new Date();
+            const dateTimeStr = now.toLocaleDateString('es-GT', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('currentDateTime').textContent = dateTimeStr;
+        }
+        
+        // Cargar datos iniciales
+        function loadInitialData() {
+            // Cargar datos de la base de datos local
+            suppliersData = localDB.findAll('ms_suppliers');
+            materialsData = localDB.findAll('ms_materials');
+            purchasesData = localDB.findAll('ms_purchases');
+            projectsData = localDB.findAll('ms_projects');
+            
+            // Si no hay datos, cargar datos de ejemplo
+            if (suppliersData.length === 0) {
+                INITIAL_SUPPLIERS.forEach(supplier => {
+                    localDB.save('ms_suppliers', supplier);
+                });
+                suppliersData = localDB.findAll('ms_suppliers');
+            }
+            
+            if (materialsData.length === 0) {
+                INITIAL_MATERIALS.forEach(material => {
+                    localDB.save('ms_materials', material);
+                });
+                materialsData = localDB.findAll('ms_materials');
+            }
+            
+            // Inicializar filtros
+            loadFilters();
+            
+            // Calcular métricas
+            calculateMetrics();
+            
+            // Mostrar proveedores iniciales
+            loadSuppliers();
+            
+            // Cargar materiales
+            loadMaterialsTable();
+            
+            // Cargar pedidos
+            loadOrdersTable();
+            
+            // Cargar cotizaciones
+            loadQuotes();
+            
+            // Inicializar nuevo pedido
+            initializeNewOrder();
+        }
+        
+        // Cargar filtros
+        function loadFilters() {
+            const projectFilter = document.getElementById('projectFilter');
+            const supplierFilter = document.getElementById('supplierFilter');
+            const materialFilter = document.getElementById('materialFilter');
+            const orderProject = document.getElementById('orderProject');
+            const orderSupplier = document.getElementById('orderSupplier');
+            const addMaterial = document.getElementById('addMaterial');
+            
+            // Proyectos
+            projectsData.forEach(project => {
+                if (project.status === 'active') {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = project.name;
+                    projectFilter.appendChild(option.cloneNode(true));
+                    orderProject.appendChild(option);
+                }
+            });
+            
+            // Proveedores
+            suppliersData.forEach(supplier => {
+                const option = document.createElement('option');
+                option.value = supplier.id;
+                option.textContent = supplier.name;
+                supplierFilter.appendChild(option.cloneNode(true));
+                orderSupplier.appendChild(option.cloneNode(true));
+            });
+            
+            // Materiales
+            materialsData.forEach(material => {
+                const option = document.createElement('option');
+                option.value = material.id;
+                option.textContent = `${material.name} (${material.unit})`;
+                materialFilter.appendChild(option.cloneNode(true));
+                addMaterial.appendChild(option.cloneNode(true));
+            });
+        }
+        
+        // Calcular métricas
+        function calculateMetrics() {
+            // Pedidos pendientes
+            const pendingOrders = purchasesData.filter(p => p.status === 'pending').length;
+            document.getElementById('pendingOrders').textContent = pendingOrders;
+            
+            // Stock crítico
+            const criticalStock = materialsData.filter(m => {
+                const stockPercentage = (m.currentStock / m.minStock) * 100;
+                return stockPercentage < 10;
+            }).length;
+            document.getElementById('criticalStock').textContent = criticalStock;
+            
+            // Compras del mes
+            const currentMonth = new Date().getMonth();
+            const monthPurchases = purchasesData
+                .filter(p => {
+                    const purchaseDate = new Date(p.date || p.createdAt);
+                    return purchaseDate.getMonth() === currentMonth && p.status === 'delivered';
+                })
+                .reduce((sum, p) => sum + (p.total || 0), 0);
+            document.getElementById('monthPurchases').textContent = `Q ${monthPurchases.toFixed(2)}`;
+            
+            // Ahorro por comparación (simulado)
+            const savings = purchasesData
+                .filter(p => p.comparisonSavings)
+                .reduce((sum, p) => sum + (p.comparisonSavings || 0), 0);
+            document.getElementById('savings').textContent = `Q ${savings.toFixed(2)}`;
+        }
+        
+        // Cargar proveedores
+        function loadSuppliers() {
+            const suppliersList = document.getElementById('suppliersList');
+            suppliersList.innerHTML = '';
+            
+            suppliersData.forEach(supplier => {
+                const supplierCard = document.createElement('div');
+                supplierCard.className = 'supplier-card';
+                
+                // Calcular rating en estrellas
+                const ratingStars = '★'.repeat(supplier.rating || 0) + '☆'.repeat(5 - (supplier.rating || 0));
+                
+                supplierCard.innerHTML = `
+                    <div class="supplier-header">
+                        <div>
+                            <div class="supplier-name">${supplier.name}</div>
+                            <div style="font-size: 0.9rem; color: #666;">
+                                <i class="fas fa-phone"></i> ${supplier.phone} 
+                                ${supplier.whatsapp ? `| <i class="fab fa-whatsapp"></i> ${supplier.whatsapp}` : ''}
+                            </div>
+                        </div>
+                        <div class="supplier-rating">
+                            ${ratingStars} (${supplier.rating || 0}/5)
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Contacto:</strong> ${supplier.contact || 'No especificado'} <br>
+                        ${supplier.email ? `<strong>Email:</strong> ${supplier.email} <br>` : ''}
+                        ${supplier.address ? `<strong>Dirección:</strong> ${supplier.address}` : ''}
+                    </div>
+                    
+                    <div>
+                        <strong>Especialidad:</strong> 
+                        ${Array.isArray(supplier.specialty) ? supplier.specialty.join(', ') : supplier.specialty || 'No especificada'}
+                    </div>
+                    
+                    ${supplier.materials && supplier.materials.length > 0 ? `
+                        <div class="mt-2">
+                            <strong>Materiales principales:</strong>
+                            <div class="material-grid">
+                                ${supplier.materials.map(material => `
+                                    <div class="material-card">
+                                        <div class="material-name">${material.name}</div>
+                                        <div>${material.unit}</div>
+                                        <div style="color: var(--accent-gold); font-weight: 600;">
+                                            Q ${material.lastPrice ? material.lastPrice.toFixed(2) : '0.00'}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="text-right mt-2">
+                        <button class="btn btn-small btn-secondary" onclick="editSupplier('${supplier.id}')">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button class="btn btn-small btn-info" onclick="viewSupplierDetails('${supplier.id}')">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
+                        <button class="whatsapp-btn btn-small" onclick="contactSupplier('${supplier.id}')">
+                            <i class="fab fa-whatsapp"></i> Contactar
+                        </button>
+                    </div>
+                `;
+                
+                suppliersList.appendChild(supplierCard);
+            });
+        }
+        
+        // Cargar tabla de materiales
+        function loadMaterialsTable() {
+            const tableBody = document.querySelector('#materialsTable tbody');
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const stockFilter = document.getElementById('stockFilter').value;
+            
+            tableBody.innerHTML = '';
+            
+            materialsData.forEach(material => {
+                // Aplicar filtros
+                if (categoryFilter && material.category !== categoryFilter) return;
+                
+                const stockPercentage = (material.currentStock / material.minStock) * 100;
+                let status = 'normal';
+                if (stockPercentage < 10) status = 'critical';
+                else if (stockPercentage < 30) status = 'low';
+                
+                if (stockFilter === 'critical' && status !== 'critical') return;
+                if (stockFilter === 'low' && status !== 'low') return;
+                if (stockFilter === 'normal' && status !== 'normal') return;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${material.name}</strong></td>
+                    <td>${getCategoryName(material.category)}</td>
+                    <td>
+                        <span class="${status === 'critical' ? 'material-stock low' : 'material-stock'}">
+                            ${material.currentStock} ${material.unit}
+                        </span>
+                    </td>
+                    <td>${material.minStock} ${material.unit}</td>
+                    <td>${material.unit}</td>
+                    <td>Q ${material.lastPrice ? material.lastPrice.toFixed(2) : '0.00'}</td>
+                    <td>${material.supplierName || 'N/A'}</td>
+                    <td>
+                        ${status === 'critical' ? '<span class="alert-badge danger">Crítico</span>' : 
+                          status === 'low' ? '<span class="alert-badge warning">Bajo</span>' : 
+                          '<span class="text-success">Normal</span>'}
+                    </td>
+                    <td class="actions">
+                        <button class="btn btn-small btn-secondary" onclick="reorderMaterial('${material.id}')">
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
+                        <button class="btn btn-small btn-info" onclick="editMaterial('${material.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Obtener nombre de categoría
+        function getCategoryName(category) {
+            const categories = {
+                'cemento': 'Cemento y Agregados',
+                'acero': 'Acero y Metales',
+                'madera': 'Madera',
+                'electricidad': 'Material Eléctrico',
+                'plomeria': 'Plomería',
+                'pintura': 'Pintura',
+                'herramientas': 'Herramientas',
+                'alquiler': 'Alquiler',
+                'otros': 'Otros'
+            };
+            return categories[category] || category;
+        }
+        
+        // Cargar tabla de pedidos
+        function loadOrdersTable() {
+            const tableBody = document.querySelector('#ordersTable tbody');
+            const projectFilter = document.getElementById('projectFilter').value;
+            const supplierFilter = document.getElementById('supplierFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            tableBody.innerHTML = '';
+            
+            purchasesData.forEach(purchase => {
+                // Aplicar filtros
+                if (projectFilter && purchase.projectId !== projectFilter && projectFilter !== 'all_active') return;
+                if (supplierFilter && purchase.supplierId !== supplierFilter) return;
+                if (statusFilter && purchase.status !== statusFilter) return;
+                
+                const project = projectsData.find(p => p.id === purchase.projectId);
+                const supplier = suppliersData.find(s => s.id === purchase.supplierId);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${purchase.id.substring(0, 8)}</td>
+                    <td>${formatDate(purchase.date || purchase.createdAt)}</td>
+                    <td>${project ? project.name : 'N/A'}</td>
+                    <td>${supplier ? supplier.name : 'N/A'}</td>
+                    <td>${purchase.items ? purchase.items.length : 0} materiales</td>
+                    <td>Q ${purchase.total ? purchase.total.toFixed(2) : '0.00'}</td>
+                    <td>
+                        <span class="quote-status ${purchase.status}">
+                            ${getStatusText(purchase.status)}
+                        </span>
+                    </td>
+                    <td>${purchase.deliveryDate ? formatDate(purchase.deliveryDate) : 'No definida'}</td>
+                    <td class="actions">
+                        <button class="btn btn-small btn-info" onclick="viewOrderDetails('${purchase.id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-small btn-success" onclick="updateOrderStatus('${purchase.id}', 'delivered')">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn btn-small btn-danger" onclick="cancelOrder('${purchase.id}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Obtener texto de estado
+        function getStatusText(status) {
+            const statuses = {
+                'pending': 'Pendiente',
+                'quoted': 'Cotizado',
+                'ordered': 'Pedido',
+                'delivered': 'Entregado',
+                'cancelled': 'Cancelado'
+            };
+            return statuses[status] || status;
+        }
+        
+        // Cargar cotizaciones
+        function loadQuotes() {
+            const quotesList = document.getElementById('quotesList');
+            quotesList.innerHTML = '';
+            
+            // Filtrar pedidos con cotizaciones
+            const quotes = purchasesData.filter(p => p.status === 'quoted');
+            
+            if (quotes.length === 0) {
+                quotesList.innerHTML = '<div class="alert alert-info">No hay cotizaciones pendientes</div>';
+                return;
+            }
+            
+            quotes.forEach(quote => {
+                const project = projectsData.find(p => p.id === quote.projectId);
+                const supplier = suppliersData.find(s => s.id === quote.supplierId);
+                
+                const quoteCard = document.createElement('div');
+                quoteCard.className = 'supplier-card';
+                quoteCard.innerHTML = `
+                    <div class="supplier-header">
+                        <div class="supplier-name">Cotización #${quote.id.substring(0, 8)}</div>
+                        <div class="quote-status quoted">Pendiente de aprobación</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Proyecto:</strong> ${project ? project.name : 'N/A'} <br>
+                        <strong>Proveedor:</strong> ${supplier ? supplier.name : 'N/A'} <br>
+                        <strong>Fecha:</strong> ${formatDate(quote.date || quote.createdAt)}
+                    </div>
+                    
+                    <div>
+                        <strong>Materiales cotizados:</strong>
+                        <ul>
+                            ${quote.items ? quote.items.map(item => `
+                                <li>${item.quantity} ${item.unit} de ${item.name} - Q ${item.unitPrice ? item.unitPrice.toFixed(2) : '0.00'} c/u</li>
+                            `).join('') : '<li>No especificados</li>'}
+                        </ul>
+                    </div>
+                    
+                    <div class="text-right">
+                        <strong>Total:</strong> Q ${quote.total ? quote.total.toFixed(2) : '0.00'}
+                    </div>
+                    
+                    <div class="text-right mt-2">
+                        <button class="btn btn-small btn-danger" onclick="rejectQuote('${quote.id}')">
+                            <i class="fas fa-times"></i> Rechazar
+                        </button>
+                        <button class="btn btn-small btn-success" onclick="acceptQuote('${quote.id}')">
+                            <i class="fas fa-check"></i> Aceptar
+                        </button>
+                        <button class="btn btn-small btn-primary" onclick="compareQuote('${quote.id}')">
+                            <i class="fas fa-balance-scale"></i> Comparar
+                        </button>
+                    </div>
+                `;
+                
+                quotesList.appendChild(quoteCard);
+            });
+        }
+        
+        // Inicializar nuevo pedido
+        function initializeNewOrder() {
+            currentOrderItems = [];
+            updateOrderSummary();
+        }
+        
+        // Agregar material al pedido
+        function addMaterialToOrder() {
+            const materialId = document.getElementById('addMaterial').value;
+            const quantity = parseFloat(document.getElementById('addQuantity').value) || 1;
+            const unitPrice = parseFloat(document.getElementById('addUnitPrice').value) || 0;
+            
+            if (!materialId) {
+                alert('Por favor seleccione un material');
+                return;
+            }
+            
+            const material = materialsData.find(m => m.id === materialId);
+            if (!material) {
+                alert('Material no encontrado');
+                return;
+            }
+            
+            // Verificar si ya está en el pedido
+            const existingItemIndex = currentOrderItems.findIndex(item => item.materialId === materialId);
+            
+            if (existingItemIndex !== -1) {
+                // Actualizar cantidad
+                currentOrderItems[existingItemIndex].quantity += quantity;
+                currentOrderItems[existingItemIndex].total = currentOrderItems[existingItemIndex].quantity * 
+                                                              currentOrderItems[existingItemIndex].unitPrice;
+            } else {
+                // Agregar nuevo item
+                currentOrderItems.push({
+                    materialId: materialId,
+                    name: material.name,
+                    quantity: quantity,
+                    unit: material.unit,
+                    unitPrice: unitPrice || material.lastPrice || 0,
+                    total: quantity * (unitPrice || material.lastPrice || 0)
+                });
+            }
+            
+            // Limpiar campos
+            document.getElementById('addQuantity').value = 1;
+            document.getElementById('addUnitPrice').value = '';
+            
+            // Actualizar lista y resumen
+            updateOrderItemsList();
+            updateOrderSummary();
+        }
+        
+        // Actualizar lista de ítems del pedido
+        function updateOrderItemsList() {
+            const orderItemsList = document.getElementById('orderItemsList');
+            orderItemsList.innerHTML = '';
+            
+            if (currentOrderItems.length === 0) {
+                orderItemsList.innerHTML = '<div class="text-center" style="padding: 2rem; color: #666;">No hay materiales en el pedido</div>';
+                return;
+            }
+            
+            currentOrderItems.forEach((item, index) => {
+                const orderItem = document.createElement('div');
+                orderItem.className = 'order-item';
+                orderItem.innerHTML = `
+                    <div style="flex: 1;">
+                        <strong>${item.name}</strong><br>
+                        <small>Cantidad: ${item.quantity} ${item.unit}</small>
+                    </div>
+                    <div style="text-align: right;">
+                        <div>Q ${item.unitPrice.toFixed(2)} c/u</div>
+                        <div><strong>Q ${item.total.toFixed(2)}</strong></div>
+                    </div>
+                    <div class="order-item-actions">
+                        <button class="btn btn-small btn-secondary" onclick="editOrderItem(${index})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-small btn-danger" onclick="removeOrderItem(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                orderItemsList.appendChild(orderItem);
+            });
+        }
+        
+        // Actualizar resumen del pedido
+        function updateOrderSummary() {
+            const subtotal = currentOrderItems.reduce((sum, item) => sum + item.total, 0);
+            const iva = subtotal * 0.12;
+            const total = subtotal + iva;
+            
+            document.getElementById('orderSubtotal').textContent = `Q ${subtotal.toFixed(2)}`;
+            document.getElementById('orderIVA').textContent = `Q ${iva.toFixed(2)}`;
+            document.getElementById('orderTotal').textContent = `Q ${total.toFixed(2)}`;
+        }
+        
+        // Editar ítem del pedido
+        function editOrderItem(index) {
+            const item = currentOrderItems[index];
+            const newQuantity = prompt(`Nueva cantidad para ${item.name} (${item.unit}):`, item.quantity);
+            const newPrice = prompt(`Nuevo precio unitario para ${item.name} (Q):`, item.unitPrice);
+            
+            if (newQuantity !== null && newPrice !== null) {
+                const quantity = parseFloat(newQuantity) || 0;
+                const unitPrice = parseFloat(newPrice) || 0;
+                
+                if (quantity > 0 && unitPrice >= 0) {
+                    currentOrderItems[index].quantity = quantity;
+                    currentOrderItems[index].unitPrice = unitPrice;
+                    currentOrderItems[index].total = quantity * unitPrice;
+                    
+                    updateOrderItemsList();
+                    updateOrderSummary();
+                }
+            }
+        }
+        
+        // Eliminar ítem del pedido
+        function removeOrderItem(index) {
+            if (confirm('¿Eliminar este material del pedido?')) {
+                currentOrderItems.splice(index, 1);
+                updateOrderItemsList();
+                updateOrderSummary();
+            }
+        }
+        
+        // Limpiar pedido
+        function clearOrder() {
+            if (confirm('¿Limpiar todo el pedido? Se perderán todos los materiales agregados.')) {
+                currentOrderItems = [];
+                updateOrderItemsList();
+                updateOrderSummary();
+            }
+        }
+        
+        // Guardar pedido
+        function saveOrder() {
+            const projectId = document.getElementById('orderProject').value;
+            const supplierId = document.getElementById('orderSupplier').value;
+            const urgency = document.getElementById('orderUrgency').value;
+            const deliveryDate = document.getElementById('orderDeliveryDate').value;
+            
+            if (!projectId) {
+                alert('Por favor seleccione un proyecto');
+                return;
+            }
+            
+            if (currentOrderItems.length === 0) {
+                alert('Agregue al menos un material al pedido');
+                return;
+            }
+            
+            const subtotal = currentOrderItems.reduce((sum, item) => sum + item.total, 0);
+            const iva = subtotal * 0.12;
+            const total = subtotal + iva;
+            
+            const orderData = {
+                projectId: projectId,
+                supplierId: supplierId,
+                items: currentOrderItems,
+                urgency: urgency,
+                deliveryDate: deliveryDate,
+                subtotal: subtotal,
+                iva: iva,
+                total: total,
+                status: 'pending',
+                date: new Date().toISOString().split('T')[0],
+                createdAt: new Date().toISOString()
+            };
+            
+            localDB.save('ms_purchases', orderData);
+            purchasesData = localDB.findAll('ms_purchases');
+            
+            alert('Pedido guardado exitosamente');
+            
+            // Limpiar formulario
+            currentOrderItems = [];
+            updateOrderItemsList();
+            updateOrderSummary();
+            document.getElementById('orderProject').value = '';
+            document.getElementById('orderSupplier').value = '';
+            document.getElementById('orderDeliveryDate').value = '';
+            
+            // Actualizar tablas
+            calculateMetrics();
+            loadOrdersTable();
+            loadQuotes();
+        }
+        
+        // Solicitar cotización por WhatsApp
+        function sendQuoteRequest() {
+            const projectId = document.getElementById('orderProject').value;
+            const supplierId = document.getElementById('orderSupplier').value;
+            
+            if (!projectId || !supplierId) {
+                alert('Complete los datos del proyecto y proveedor primero');
+                return;
+            }
+            
+            if (currentOrderItems.length === 0) {
+                alert('Agregue materiales al pedido antes de solicitar cotización');
+                return;
+            }
+            
+            const project = projectsData.find(p => p.id === projectId);
+            const supplier = suppliersData.find(s => s.id === supplierId);
+            
+            if (!supplier || !supplier.whatsapp) {
+                alert('El proveedor no tiene número de WhatsApp registrado');
+                return;
+            }
+            
+            // Crear mensaje de WhatsApp
+            let message = `*SOLICITUD DE COTIZACIÓN - CONSTRUCTORA WM/M&S*\n\n`;
+            message += `Proyecto: ${project ? project.name : 'N/A'}\n`;
+            message += `Fecha requerida: ${document.getElementById('orderDeliveryDate').value || 'A convenir'}\n`;
+            message += `Urgencia: ${document.getElementById('orderUrgency').options[document.getElementById('orderUrgency').selectedIndex].text}\n\n`;
+            message += `*Materiales solicitados:*\n`;
+            
+            currentOrderItems.forEach((item, index) => {
+                message += `${index + 1}. ${item.quantity} ${item.unit} de ${item.name}\n`;
+            });
+            
+            message += `\nPor favor enviar cotización con precios y disponibilidad.\n`;
+            message += `Gracias.\n\n`;
+            message += `CONSTRUCTORA WM/M&S\n"EDIFICANDO EL FUTURO"`;
+            
+            // Codificar mensaje para URL
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/${supplier.whatsapp.replace(/\D/g, '')}?text=${encodedMessage}`;
+            
+            // Guardar como cotización pendiente
+            const quoteData = {
+                projectId: projectId,
+                supplierId: supplierId,
+                items: currentOrderItems,
+                status: 'quoted',
+                date: new Date().toISOString().split('T')[0],
+                createdAt: new Date().toISOString()
+            };
+            
+            localDB.save('ms_purchases', quoteData);
+            purchasesData = localDB.findAll('ms_purchases');
+            
+            // Abrir WhatsApp
+            window.open(whatsappUrl, '_blank');
+            
+            alert('Solicitud de cotización enviada por WhatsApp');
+            
+            // Actualizar interfaz
+            loadQuotes();
+            loadOrdersTable();
+        }
+        
+        // Mostrar modal de proveedor
+        function showSupplierModal(supplier = null) {
+            const modal = document.getElementById('supplierModal');
+            const title = document.getElementById('supplierModalTitle');
+            
+            if (supplier) {
+                title.textContent = 'Editar Proveedor';
+                editingSupplierId = supplier.id;
+                
+                // Llenar formulario
+                document.getElementById('supplierName').value = supplier.name || '';
+                document.getElementById('supplierContact').value = supplier.contact || '';
+                document.getElementById('supplierPhone').value = supplier.phone || '';
+                document.getElementById('supplierWhatsApp').value = supplier.whatsapp || '';
+                document.getElementById('supplierEmail').value = supplier.email || '';
+                document.getElementById('supplierAddress').value = supplier.address || '';
+                document.getElementById('supplierRating').value = supplier.rating || '3';
+                document.getElementById('supplierNotes').value = supplier.notes || '';
+                
+                // Seleccionar especialidades
+                const specialtySelect = document.getElementById('supplierSpecialty');
+                Array.from(specialtySelect.options).forEach(option => {
+                    option.selected = Array.isArray(supplier.specialty) ? 
+                        supplier.specialty.includes(option.value) : false;
+                });
+            } else {
+                title.textContent = 'Nuevo Proveedor';
+                editingSupplierId = null;
+                
+                // Limpiar formulario
+                document.getElementById('supplierName').value = '';
+                document.getElementById('supplierContact').value = '';
+                document.getElementById('supplierPhone').value = '';
+                document.getElementById('supplierWhatsApp').value = '';
+                document.getElementById('supplierEmail').value = '';
+                document.getElementById('supplierAddress').value = '';
+                document.getElementById('supplierRating').value = '3';
+                document.getElementById('supplierNotes').value = '';
+                
+                // Deseleccionar especialidades
+                const specialtySelect = document.getElementById('supplierSpecialty');
+                Array.from(specialtySelect.options).forEach(option => {
+                    option.selected = false;
+                });
+            }
+            
+            modal.style.display = 'flex';
+        }
+        
+        // Guardar proveedor
+        function saveSupplier() {
+            const supplierData = {
+                name: document.getElementById('supplierName').value,
+                contact: document.getElementById('supplierContact').value,
+                phone: document.getElementById('supplierPhone').value,
+                whatsapp: document.getElementById('supplierWhatsApp').value,
+                email: document.getElementById('supplierEmail').value,
+                address: document.getElementById('supplierAddress').value,
+                rating: parseInt(document.getElementById('supplierRating').value),
+                notes: document.getElementById('supplierNotes').value
+            };
+            
+            // Obtener especialidades seleccionadas
+            const specialtySelect = document.getElementById('supplierSpecialty');
+            supplierData.specialty = Array.from(specialtySelect.selectedOptions).map(option => option.value);
+            
+            // Validaciones
+            if (!supplierData.name || !supplierData.phone) {
+                alert('Por favor complete los campos obligatorios (Nombre y Teléfono)');
+                return;
+            }
+            
+            // Guardar o actualizar
+            if (editingSupplierId) {
+                supplierData.id = editingSupplierId;
+                localDB.save('ms_suppliers', supplierData);
+                alert('Proveedor actualizado exitosamente');
+            } else {
+                localDB.save('ms_suppliers', supplierData);
+                alert('Proveedor creado exitosamente');
+            }
+            
+            // Cerrar modal y recargar datos
+            document.getElementById('supplierModal').style.display = 'none';
+            suppliersData = localDB.findAll('ms_suppliers');
+            loadSuppliers();
+            loadFilters();
+        }
+        
+        // Editar proveedor
+        function editSupplier(supplierId) {
+            const supplier = suppliersData.find(s => s.id === supplierId);
+            if (supplier) {
+                showSupplierModal(supplier);
+            }
+        }
+        
+        // Ver detalles del proveedor
+        function viewSupplierDetails(supplierId) {
+            const supplier = suppliersData.find(s => s.id === supplierId);
+            if (supplier) {
+                let details = `
+                    <strong>Nombre:</strong> ${supplier.name}<br>
+                    <strong>Contacto:</strong> ${supplier.contact || 'No especificado'}<br>
+                    <strong>Teléfono:</strong> ${supplier.phone}<br>
+                    ${supplier.whatsapp ? `<strong>WhatsApp:</strong> ${supplier.whatsapp}<br>` : ''}
+                    ${supplier.email ? `<strong>Email:</strong> ${supplier.email}<br>` : ''}
+                    ${supplier.address ? `<strong>Dirección:</strong> ${supplier.address}<br>` : ''}
+                    <strong>Calificación:</strong> ${supplier.rating || 0}/5<br>
+                    <strong>Especialidad:</strong> ${Array.isArray(supplier.specialty) ? supplier.specialty.join(', ') : supplier.specialty || 'No especificada'}<br>
+                `;
+                
+                if (supplier.notes) {
+                    details += `<br><strong>Notas:</strong><br>${supplier.notes}`;
+                }
+                
+                if (supplier.materials && supplier.materials.length > 0) {
+                    details += `<br><br><strong>Materiales ofrecidos:</strong><br>`;
+                    supplier.materials.forEach(material => {
+                        details += `• ${material.name} (${material.unit}): Q ${material.lastPrice ? material.lastPrice.toFixed(2) : '0.00'}<br>`;
+                    });
+                }
+                
+                alert(details);
+            }
+        }
+        
+        // Contactar proveedor por WhatsApp
+        function contactSupplier(supplierId) {
+            const supplier = suppliersData.find(s => s.id === supplierId);
+            if (supplier && supplier.whatsapp) {
+                const message = encodeURIComponent(
+                    `Hola ${supplier.contact || supplier.name}, soy de CONSTRUCTORA WM/M&S. Necesito consultar sobre materiales disponibles.`
+                );
+                const whatsappUrl = `https://wa.me/${supplier.whatsapp.replace(/\D/g, '')}?text=${message}`;
+                window.open(whatsappUrl, '_blank');
+            } else {
+                alert('El proveedor no tiene número de WhatsApp registrado');
+            }
+        }
+        
+        // Reordenar material
+        function reorderMaterial(materialId) {
+            const material = materialsData.find(m => m.id === materialId);
+            if (material) {
+                // Agregar al pedido actual
+                const existingItemIndex = currentOrderItems.findIndex(item => item.materialId === materialId);
+                
+                if (existingItemIndex !== -1) {
+                    currentOrderItems[existingItemIndex].quantity += 1;
+                    currentOrderItems[existingItemIndex].total = currentOrderItems[existingItemIndex].quantity * 
+                                                                  currentOrderItems[existingItemIndex].unitPrice;
+                } else {
+                    currentOrderItems.push({
+                        materialId: material.id,
+                        name: material.name,
+                        quantity: 1,
+                        unit: material.unit,
+                        unitPrice: material.lastPrice || 0,
+                        total: material.lastPrice || 0
+                    });
+                }
+                
+                // Cambiar a pestaña de nuevo pedido
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+                document.querySelector('[data-tab="new-order"]').classList.add('active');
+                document.getElementById('new-order-tab').classList.add('active');
+                
+                // Actualizar lista y resumen
+                updateOrderItemsList();
+                updateOrderSummary();
+                
+                alert('Material agregado al pedido');
+            }
+        }
+        
+        // Formatear fecha
+        function formatDate(dateString) {
+            if (!dateString) return 'No definida';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-GT');
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 60000);
+            
+            // Cargar datos iniciales
+            loadInitialData();
+            
+            // Event listeners para pestañas
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.dataset.tab;
+                    
+                    // Actualizar botones
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Actualizar contenido
+                    document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+            
+            // Event listeners generales
+            document.getElementById('addSupplierBtn').addEventListener('click', () => showSupplierModal());
+            document.getElementById('saveSupplierBtn').addEventListener('click', saveSupplier);
+            document.getElementById('cancelSupplierBtn').addEventListener('click', () => {
+                document.getElementById('supplierModal').style.display = 'none';
+            });
+            
+            document.getElementById('addToOrderBtn').addEventListener('click', addMaterialToOrder);
+            document.getElementById('clearOrderBtn').addEventListener('click', clearOrder);
+            document.getElementById('saveOrderBtn').addEventListener('click', saveOrder);
+            document.getElementById('sendQuoteRequestBtn').addEventListener('click', sendQuoteRequest);
+            
+            document.getElementById('categoryFilter').addEventListener('change', loadMaterialsTable);
+            document.getElementById('stockFilter').addEventListener('change', loadMaterialsTable);
+            
+            document.getElementById('projectFilter').addEventListener('change', loadOrdersTable);
+            document.getElementById('supplierFilter').addEventListener('change', loadOrdersTable);
+            document.getElementById('statusFilter').addEventListener('change', loadOrdersTable);
+            
+            document.getElementById('exportPurchasesBtn').addEventListener('click', function() {
+                alert('Exportación de datos de compras (en desarrollo)');
+            });
+            
+            document.getElementById('syncPurchasesBtn').addEventListener('click', function() {
+                alert('Sincronización con la nube (en desarrollo)');
+            });
+            
+            document.getElementById('printPurchaseOrderBtn').addEventListener('click', function() {
+                alert('Impresión de orden de compra (en desarrollo)');
+            });
+            
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                if (confirm('¿Está seguro de que desea salir del sistema?')) {
+                    window.location.href = 'index.html';
+                }
+            });
+            
+            // Cerrar modal haciendo clic fuera
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('supplierModal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

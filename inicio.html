@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&S Constructor - Inicio</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div>
+                    <div class="logo-small">CONSTRUCTORA WM/M&S</div>
+                    <div class="slogan-small">EDIFICANDO EL FUTURO</div>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="datetime" id="currentDateTime"></div>
+                <button class="btn btn-danger btn-small" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Filtro de proyectos -->
+            <div class="filters-container">
+                <h2 class="section-title">Control de Ingresos y Gastos</h2>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="projectFilter">Seleccionar Proyecto</label>
+                        <select id="projectFilter">
+                            <option value="">-- Seleccione un proyecto --</option>
+                            <!-- Proyectos cargados dinámicamente -->
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="dateFilter">Fecha</label>
+                        <input type="date" id="dateFilter" value="">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones principales -->
+            <div class="navigation">
+                <div class="nav-card" id="incomeBtn">
+                    <div class="nav-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="nav-title">REGISTRAR INGRESO</div>
+                    <div class="nav-desc">Registrar entradas de dinero</div>
+                </div>
+
+                <div class="nav-card" id="expenseBtn">
+                    <div class="nav-icon">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="nav-title">REGISTRAR GASTO</div>
+                    <div class="nav-desc">Registrar salidas de dinero</div>
+                </div>
+            </div>
+
+            <!-- Formulario de Ingreso (oculto inicialmente) -->
+            <div class="form-section hidden" id="incomeForm">
+                <h2 class="section-title">Nuevo Ingreso</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="incomeProject">Proyecto</label>
+                        <input type="text" id="incomeProject" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="incomeDescription">Descripción</label>
+                        <input type="text" id="incomeDescription" placeholder="Descripción del ingreso">
+                    </div>
+                    <div class="form-group">
+                        <label for="incomeAmount">Cantidad</label>
+                        <input type="number" id="incomeAmount" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="incomeUnit">Unidad</label>
+                        <select id="incomeUnit">
+                            <option value="Q">Quetzal (GTQ)</option>
+                            <option value="prestamo">Préstamo</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="incomeCost">Costo (Q)</label>
+                        <input type="number" id="incomeCost" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="incomeCategory">Categoría</label>
+                        <select id="incomeCategory">
+                            <option value="aporte">Aporte (pagos del cliente)</option>
+                            <option value="agrimensura">Agrimensura</option>
+                            <option value="avaluo">Avalúo</option>
+                            <option value="planificacion">Planificación</option>
+                            <option value="anteproyecto">Anteproyecto</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="incomeDate">Fecha</label>
+                        <input type="date" id="incomeDate">
+                    </div>
+                </div>
+                <div class="text-right mt-3">
+                    <button class="btn btn-secondary" id="cancelIncomeBtn">Cancelar</button>
+                    <button class="btn btn-success" id="saveIncomeBtn">Guardar Ingreso</button>
+                </div>
+            </div>
+
+            <!-- Formulario de Gasto (oculto inicialmente) -->
+            <div class="form-section hidden" id="expenseForm">
+                <h2 class="section-title">Nuevo Gasto</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="expenseProject">Proyecto</label>
+                        <input type="text" id="expenseProject" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseDescription">Descripción</label>
+                        <input type="text" id="expenseDescription" placeholder="Descripción del gasto">
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseAmount">Cantidad</label>
+                        <input type="number" id="expenseAmount" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseUnit">Unidad</label>
+                        <select id="expenseUnit">
+                            <option value="Q">Quetzal (GTQ)</option>
+                            <option value="m3">m³</option>
+                            <option value="m2">m²</option>
+                            <option value="ml">ml</option>
+                            <option value="saco">Saco</option>
+                            <option value="libra">Libra</option>
+                            <option value="varilla">Varilla</option>
+                            <option value="quintal">Quintal</option>
+                            <option value="unidad">Unidad</option>
+                            <option value="global">Global</option>
+                            <option value="pie_tabla">Pie Tabla</option>
+                            <option value="litro">Litro</option>
+                            <option value="viaje">Viaje</option>
+                            <option value="camion">Camión 10m³</option>
+                            <option value="hora">Hora</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseCost">Costo (Q)</label>
+                        <input type="number" id="expenseCost" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseCategory">Categoría</label>
+                        <select id="expenseCategory">
+                            <option value="materiales">Materiales</option>
+                            <option value="planilla">Planilla</option>
+                            <option value="equipo">Equipo/Herramienta</option>
+                            <option value="subcontrato">Sub-contrato</option>
+                            <option value="administrativo">Administrativo</option>
+                            <option value="personales">Personales</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseSupplier">Proveedor (opcional)</label>
+                        <select id="expenseSupplier" onchange="toggleRentalDates()">
+                            <option value="">-- Seleccione proveedor --</option>
+                            <option value="alquiler">Alquiler de equipo</option>
+                            <!-- Proveedores cargados dinámicamente -->
+                        </select>
+                    </div>
+                    <div class="form-group hidden" id="rentalDates">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="rentalStart">Fecha Inicio Alquiler</label>
+                                <input type="date" id="rentalStart">
+                            </div>
+                            <div class="form-group">
+                                <label for="rentalEnd">Fecha Fin Alquiler</label>
+                                <input type="date" id="rentalEnd">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="expenseDate">Fecha</label>
+                        <input type="date" id="expenseDate">
+                    </div>
+                </div>
+                <div class="text-right mt-3">
+                    <button class="btn btn-secondary" id="cancelExpenseBtn">Cancelar</button>
+                    <button class="btn btn-success" id="saveExpenseBtn">Guardar Gasto</button>
+                </div>
+            </div>
+
+            <!-- Navegación a otras herramientas -->
+            <div class="navigation">
+                <a href="proyectos.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="nav-title">PROYECTOS</div>
+                    <div class="nav-desc">Gestión de proyectos</div>
+                </a>
+
+                <a href="presupuestos.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <div class="nav-title">PRESUPUESTOS</div>
+                    <div class="nav-desc">Cuantificación y costos</div>
+                </a>
+
+                <a href="seguimiento.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="nav-title">SEGUIMIENTO</div>
+                    <div class="nav-desc">Control físico y financiero</div>
+                </a>
+
+                <a href="compras.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="nav-title">COMPRAS</div>
+                    <div class="nav-desc">Gestión de compras</div>
+                </a>
+
+                <a href="rrhh.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="nav-title">RECURSOS HUMANOS</div>
+                    <div class="nav-desc">Personal y planillas</div>
+                </a>
+
+                <a href="dashboard.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="nav-title">DASHBOARD</div>
+                    <div class="nav-desc">Tablero principal</div>
+                </a>
+            </div>
+
+            <!-- Resumen reciente -->
+            <div class="form-section">
+                <h2 class="section-title">Registros Recientes</h2>
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="data-table" id="recentTransactions">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Descripción</th>
+                                    <th>Proyecto</th>
+                                    <th>Monto (Q)</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Datos cargados dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="cotizacion.html" class="footer-link">Cotización Rápida</a>
+                    <a href="#" class="footer-link">Soporte</a>
+                    <a href="#" class="footer-link">Manual de Usuario</a>
+                </div>
+                <div class="copyright">
+                    © 2024 CONSTRUCTORA WM/M&S - "EDIFICANDO EL FUTURO"<br>
+                    Barrio el Centro Casco Urbano Quesada Jutiapa | Tel: 55606172 | Email: multiserviciosdeguatemal@gmail.com
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/database.js"></script>
+    <script>
+        // Actualizar fecha y hora en tiempo real
+        function updateDateTime() {
+            const now = new Date();
+            const dateTimeStr = now.toLocaleDateString('es-GT', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('currentDateTime').textContent = dateTimeStr;
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            // Cargar proyectos
+            loadProjects();
+            
+            // Configurar fecha actual
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateFilter').value = today;
+            document.getElementById('incomeDate').value = today;
+            document.getElementById('expenseDate').value = today;
+            
+            // Mostrar/ocultar formularios
+            document.getElementById('incomeBtn').addEventListener('click', function() {
+                const project = document.getElementById('projectFilter').value;
+                if (!project) {
+                    alert('Por favor, seleccione un proyecto primero.');
+                    return;
+                }
+                
+                document.getElementById('incomeForm').classList.remove('hidden');
+                document.getElementById('expenseForm').classList.add('hidden');
+                document.getElementById('incomeProject').value = project;
+            });
+            
+            document.getElementById('expenseBtn').addEventListener('click', function() {
+                const project = document.getElementById('projectFilter').value;
+                if (!project) {
+                    alert('Por favor, seleccione un proyecto primero.');
+                    return;
+                }
+                
+                document.getElementById('expenseForm').classList.remove('hidden');
+                document.getElementById('incomeForm').classList.add('hidden');
+                document.getElementById('expenseProject').value = project;
+            });
+            
+            document.getElementById('cancelIncomeBtn').addEventListener('click', function() {
+                document.getElementById('incomeForm').classList.add('hidden');
+                resetIncomeForm();
+            });
+            
+            document.getElementById('cancelExpenseBtn').addEventListener('click', function() {
+                document.getElementById('expenseForm').classList.add('hidden');
+                resetExpenseForm();
+            });
+            
+            // Guardar ingresos
+            document.getElementById('saveIncomeBtn').addEventListener('click', function() {
+                saveIncome();
+            });
+            
+            // Guardar gastos
+            document.getElementById('saveExpenseBtn').addEventListener('click', function() {
+                saveExpense();
+            });
+            
+            // Cerrar sesión
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                if (confirm('¿Está seguro de que desea salir del sistema?')) {
+                    window.location.href = 'index.html';
+                }
+            });
+            
+            // Cargar transacciones recientes
+            loadRecentTransactions();
+        });
+        
+        // Funciones para manejar fechas de alquiler
+        function toggleRentalDates() {
+            const supplier = document.getElementById('expenseSupplier').value;
+            const rentalDates = document.getElementById('rentalDates');
+            
+            if (supplier === 'alquiler') {
+                rentalDates.classList.remove('hidden');
+                
+                // Configurar fecha de fin para 30 días después
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() + 1);
+                document.getElementById('rentalStart').value = startDate.toISOString().split('T')[0];
+                
+                const endDate = new Date();
+                endDate.setDate(endDate.getDate() + 30);
+                document.getElementById('rentalEnd').value = endDate.toISOString().split('T')[0];
+            } else {
+                rentalDates.classList.add('hidden');
+            }
+        }
+        
+        // Cargar proyectos desde localStorage
+        function loadProjects() {
+            const projects = JSON.parse(localStorage.getItem('ms_projects')) || [];
+            const projectFilter = document.getElementById('projectFilter');
+            
+            // Limpiar opciones excepto la primera
+            while (projectFilter.options.length > 1) {
+                projectFilter.remove(1);
+            }
+            
+            // Agregar proyectos activos
+            projects.forEach(project => {
+                if (project.status === 'active') {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = `${project.name} - ${project.client}`;
+                    projectFilter.appendChild(option);
+                }
+            });
+        }
+        
+        // Guardar ingreso
+        function saveIncome() {
+            const projectId = document.getElementById('projectFilter').value;
+            const description = document.getElementById('incomeDescription').value;
+            const amount = parseFloat(document.getElementById('incomeAmount').value);
+            const unit = document.getElementById('incomeUnit').value;
+            const cost = parseFloat(document.getElementById('incomeCost').value);
+            const category = document.getElementById('incomeCategory').value;
+            const date = document.getElementById('incomeDate').value;
+            
+            // Validaciones
+            if (!description || !amount || !cost) {
+                alert('Por favor complete todos los campos obligatorios.');
+                return;
+            }
+            
+            // Obtener transacciones existentes
+            const transactions = JSON.parse(localStorage.getItem('ms_transactions')) || [];
+            
+            // Crear nueva transacción
+            const newTransaction = {
+                id: 'INC_' + Date.now(),
+                type: 'income',
+                projectId,
+                description,
+                amount,
+                unit,
+                cost,
+                category,
+                date,
+                createdAt: new Date().toISOString()
+            };
+            
+            // Agregar a la lista
+            transactions.push(newTransaction);
+            
+            // Guardar en localStorage
+            localStorage.setItem('ms_transactions', JSON.stringify(transactions));
+            
+            // Actualizar resumen del proyecto
+            updateProjectSummary(projectId, 'income', cost);
+            
+            // Resetear formulario y mostrar mensaje
+            resetIncomeForm();
+            document.getElementById('incomeForm').classList.add('hidden');
+            alert('Ingreso registrado exitosamente.');
+            
+            // Actualizar tabla de transacciones
+            loadRecentTransactions();
+        }
+        
+        // Guardar gasto
+        function saveExpense() {
+            const projectId = document.getElementById('projectFilter').value;
+            const description = document.getElementById('expenseDescription').value;
+            const amount = parseFloat(document.getElementById('expenseAmount').value);
+            const unit = document.getElementById('expenseUnit').value;
+            const cost = parseFloat(document.getElementById('expenseCost').value);
+            const category = document.getElementById('expenseCategory').value;
+            const supplier = document.getElementById('expenseSupplier').value;
+            const date = document.getElementById('expenseDate').value;
+            const rentalStart = document.getElementById('rentalStart').value;
+            const rentalEnd = document.getElementById('rentalEnd').value;
+            
+            // Validaciones
+            if (!description || !amount || !cost) {
+                alert('Por favor complete todos los campos obligatorios.');
+                return;
+            }
+            
+            // Obtener transacciones existentes
+            const transactions = JSON.parse(localStorage.getItem('ms_transactions')) || [];
+            
+            // Crear nueva transacción
+            const newTransaction = {
+                id: 'EXP_' + Date.now(),
+                type: 'expense',
+                projectId,
+                description,
+                amount,
+                unit,
+                cost,
+                category,
+                supplier,
+                date,
+                rentalStart: supplier === 'alquiler' ? rentalStart : null,
+                rentalEnd: supplier === 'alquiler' ? rentalEnd : null,
+                createdAt: new Date().toISOString()
+            };
+            
+            // Agregar a la lista
+            transactions.push(newTransaction);
+            
+            // Guardar en localStorage
+            localStorage.setItem('ms_transactions', JSON.stringify(transactions));
+            
+            // Actualizar stock si es material
+            if (category === 'materiales') {
+                updateMaterialStock(projectId, description, amount, unit);
+            }
+            
+            // Actualizar resumen del proyecto
+            updateProjectSummary(projectId, 'expense', cost);
+            
+            // Resetear formulario y mostrar mensaje
+            resetExpenseForm();
+            document.getElementById('expenseForm').classList.add('hidden');
+            
+            // Mostrar alerta si es alquiler
+            if (supplier === 'alquiler') {
+                alert('Gasto registrado exitosamente. Se creó una alerta para el vencimiento del alquiler.');
+            } else {
+                alert('Gasto registrado exitosamente.');
+            }
+            
+            // Actualizar tabla de transacciones
+            loadRecentTransactions();
+        }
+        
+        // Resetear formulario de ingreso
+        function resetIncomeForm() {
+            document.getElementById('incomeDescription').value = '';
+            document.getElementById('incomeAmount').value = '';
+            document.getElementById('incomeCost').value = '';
+        }
+        
+        // Resetear formulario de gasto
+        function resetExpenseForm() {
+            document.getElementById('expenseDescription').value = '';
+            document.getElementById('expenseAmount').value = '';
+            document.getElementById('expenseCost').value = '';
+            document.getElementById('expenseSupplier').value = '';
+            document.getElementById('rentalDates').classList.add('hidden');
+        }
+        
+        // Actualizar resumen del proyecto
+        function updateProjectSummary(projectId, type, amount) {
+            const projects = JSON.parse(localStorage.getItem('ms_projects')) || [];
+            const projectIndex = projects.findIndex(p => p.id === projectId);
+            
+            if (projectIndex !== -1) {
+                if (!projects[projectIndex].financialSummary) {
+                    projects[projectIndex].financialSummary = {
+                        totalIncome: 0,
+                        totalExpense: 0,
+                        balance: 0
+                    };
+                }
+                
+                if (type === 'income') {
+                    projects[projectIndex].financialSummary.totalIncome += amount;
+                } else {
+                    projects[projectIndex].financialSummary.totalExpense += amount;
+                }
+                
+                projects[projectIndex].financialSummary.balance = 
+                    projects[projectIndex].financialSummary.totalIncome - 
+                    projects[projectIndex].financialSummary.totalExpense;
+                
+                localStorage.setItem('ms_projects', JSON.stringify(projects));
+            }
+        }
+        
+        // Actualizar stock de materiales
+        function updateMaterialStock(projectId, material, amount, unit) {
+            const budgets = JSON.parse(localStorage.getItem('ms_budgets')) || [];
+            const projectBudget = budgets.find(b => b.projectId === projectId);
+            
+            if (projectBudget && projectBudget.materials) {
+                const materialIndex = projectBudget.materials.findIndex(m => 
+                    m.name.toLowerCase() === material.toLowerCase());
+                
+                if (materialIndex !== -1) {
+                    // Reducir la cantidad en stock
+                    projectBudget.materials[materialIndex].stock -= amount;
+                    
+                    // Actualizar en localStorage
+                    localStorage.setItem('ms_budgets', JSON.stringify(budgets));
+                }
+            }
+        }
+        
+        // Cargar transacciones recientes
+        function loadRecentTransactions() {
+            const transactions = JSON.parse(localStorage.getItem('ms_transactions')) || [];
+            const projects = JSON.parse(localStorage.getItem('ms_projects')) || [];
+            const tbody = document.querySelector('#recentTransactions tbody');
+            
+            // Limpiar tabla
+            tbody.innerHTML = '';
+            
+            // Ordenar por fecha (más reciente primero)
+            const sortedTransactions = transactions.sort((a, b) => 
+                new Date(b.createdAt) - new Date(a.createdAt));
+            
+            // Mostrar las últimas 10 transacciones
+            const recentTransactions = sortedTransactions.slice(0, 10);
+            
+            recentTransactions.forEach(transaction => {
+                const project = projects.find(p => p.id === transaction.projectId);
+                const projectName = project ? project.name : 'N/A';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(transaction.date)}</td>
+                    <td>
+                        <span class="${transaction.type === 'income' ? 'text-success' : 'text-danger'}">
+                            ${transaction.type === 'income' ? 'INGRESO' : 'GASTO'}
+                        </span>
+                    </td>
+                    <td>${transaction.description}</td>
+                    <td>${projectName}</td>
+                    <td class="${transaction.type === 'income' ? 'text-success' : 'text-danger'}">
+                        Q ${transaction.cost.toFixed(2)}
+                    </td>
+                    <td class="actions">
+                        <button class="btn btn-small btn-secondary" onclick="viewTransaction('${transaction.id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-small btn-danger" onclick="deleteTransaction('${transaction.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Formatear fecha
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-GT');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&S Constructor - Gestión de Proyectos</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div>
+                    <div class="logo-small">CONSTRUCTORA WM/M&S</div>
+                    <div class="slogan-small">EDIFICANDO EL FUTURO</div>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="datetime" id="currentDateTime"></div>
+                <button class="btn btn-danger btn-small" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Filtros -->
+            <div class="filters-container">
+                <h2 class="section-title">Gestión de Proyectos</h2>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="statusFilter">Estado del Proyecto</label>
+                        <select id="statusFilter">
+                            <option value="">Todos los estados</option>
+                            <option value="pending">En espera/Stand by</option>
+                            <option value="active">Activo</option>
+                            <option value="completed">Completado</option>
+                            <option value="cancelled">Cancelado</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="searchProject">Buscar Proyecto</label>
+                        <input type="text" id="searchProject" placeholder="Nombre del proyecto o cliente">
+                    </div>
+                    <div class="filter-group">
+                        <button class="btn btn-primary" id="newProjectBtn">
+                            <i class="fas fa-plus"></i> Nuevo Proyecto
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Proyectos -->
+            <div class="form-section">
+                <h2 class="section-title">Proyectos Registrados</h2>
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="data-table" id="projectsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre Proyecto</th>
+                                    <th>Cliente</th>
+                                    <th>Ubicación</th>
+                                    <th>Área (m²)</th>
+                                    <th>Estado</th>
+                                    <th>Fecha Inicio</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Datos cargados dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de Nuevo Proyecto (Modal) -->
+            <div class="modal" id="projectModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="modalTitle">Nuevo Proyecto</h3>
+                        <button class="close-modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="projectName">Nombre del Proyecto *</label>
+                                <input type="text" id="projectName" placeholder="Ej: Casa Residencial Las Flores">
+                            </div>
+                            <div class="form-group">
+                                <label for="clientName">Nombre del Cliente *</label>
+                                <input type="text" id="clientName" placeholder="Nombre completo del cliente">
+                            </div>
+                            <div class="form-group">
+                                <label for="clientPhone">Teléfono del Cliente</label>
+                                <input type="tel" id="clientPhone" placeholder="Ej: 12345678">
+                            </div>
+                            <div class="form-group">
+                                <label for="clientEmail">Email del Cliente</label>
+                                <input type="email" id="clientEmail" placeholder="cliente@email.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="projectLocation">Ubicación *</label>
+                                <input type="text" id="projectLocation" placeholder="Dirección exacta del proyecto">
+                            </div>
+                            <div class="form-group">
+                                <label for="projectDepartment">Departamento</label>
+                                <select id="projectDepartment">
+                                    <option value="">Seleccionar departamento</option>
+                                    <option value="guatemala">Guatemala</option>
+                                    <option value="sacatepequez">Sacatepéquez</option>
+                                    <option value="chimaltenango">Chimaltenango</option>
+                                    <option value="escuintla">Escuintla</option>
+                                    <option value="quetzaltenango">Quetzaltenango</option>
+                                    <option value="jutiapa">Jutiapa</option>
+                                    <option value="peten">Petén</option>
+                                    <option value="alta_verapaz">Alta Verapaz</option>
+                                    <option value="izabal">Izabal</option>
+                                    <option value="zacapa">Zacapa</option>
+                                    <option value="chiquimula">Chiquimula</option>
+                                    <option value="santa_rosa">Santa Rosa</option>
+                                    <option value="solola">Sololá</option>
+                                    <option value="totonicapan">Totonicapán</option>
+                                    <option value="quiche">Quiché</option>
+                                    <option value="baja_verapaz">Baja Verapaz</option>
+                                    <option value="huehuetenango">Huehuetenango</option>
+                                    <option value="san_marcos">San Marcos</option>
+                                    <option value="retalhuleu">Retalhuleu</option>
+                                    <option value="suchitepequez">Suchitepéquez</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="landArea">Área del Terreno (m²) *</label>
+                                <input type="number" id="landArea" step="0.01" placeholder="Ej: 500.00">
+                            </div>
+                            <div class="form-group">
+                                <label for="constructionArea">Área a Construir (m²) *</label>
+                                <input type="number" id="constructionArea" step="0.01" placeholder="Ej: 250.00">
+                            </div>
+                            <div class="form-group">
+                                <label for="projectType">Tipo de Proyecto</label>
+                                <select id="projectType">
+                                    <option value="">Seleccionar tipo</option>
+                                    <option value="residencial">Residencial</option>
+                                    <option value="comercial">Comercial</option>
+                                    <option value="industrial">Industrial</option>
+                                    <option value="civil">Civil</option>
+                                    <option value="publica">Pública</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="projectStatus">Estado *</label>
+                                <select id="projectStatus">
+                                    <option value="pending">En espera/Stand by</option>
+                                    <option value="active">Activo</option>
+                                    <option value="completed">Completado</option>
+                                    <option value="cancelled">Cancelado</option>
+                                </select>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="needsProgram">Programa de Necesidades</label>
+                                <textarea id="needsProgram" rows="4" placeholder="Describa lo que el cliente necesita (habitaciones, baños, áreas sociales, etc.)"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="startDate">Fecha de Inicio</label>
+                                <input type="date" id="startDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="estimatedEndDate">Fecha Estimada de Fin</label>
+                                <input type="date" id="estimatedEndDate">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="projectNotes">Notas Adicionales</label>
+                                <textarea id="projectNotes" rows="3" placeholder="Observaciones adicionales"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="text-right mt-3">
+                            <button class="btn btn-secondary" id="cancelProjectBtn">Cancelar</button>
+                            <button class="btn btn-success" id="saveProjectBtn">Guardar Proyecto</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="navigation">
+                <a href="inicio.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="nav-title">INICIO</div>
+                    <div class="nav-desc">Registro de ingresos/gastos</div>
+                </a>
+
+                <a href="presupuestos.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <div class="nav-title">PRESUPUESTOS</div>
+                    <div class="nav-desc">Cuantificación y costos</div>
+                </a>
+
+                <a href="seguimiento.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="nav-title">SEGUIMIENTO</div>
+                    <div class="nav-desc">Control físico y financiero</div>
+                </a>
+
+                <a href="dashboard.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="nav-title">DASHBOARD</div>
+                    <div class="nav-desc">Tablero principal</div>
+                </a>
+            </div>
+
+            <!-- Información de proyectos pendientes -->
+            <div class="cards-container" id="pendingProjects">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Proyectos en Espera</div>
+                        <div class="card-value" id="pendingCount">0</div>
+                    </div>
+                    <div class="card-footer">
+                        Esperando negociación con cliente
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Proyectos Activos</div>
+                        <div class="card-value" id="activeCount">0</div>
+                    </div>
+                    <div class="card-footer">
+                        En ejecución actualmente
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Proyectos Completados</div>
+                        <div class="card-value" id="completedCount">0</div>
+                    </div>
+                    <div class="card-footer">
+                        Finalizados exitosamente
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <button class="btn btn-secondary btn-small" id="exportProjectsBtn">
+                        <i class="fas fa-file-export"></i> Exportar CSV
+                    </button>
+                    <button class="btn btn-secondary btn-small" id="importProjectsBtn">
+                        <i class="fas fa-file-import"></i> Importar CSV
+                    </button>
+                    <button class="btn btn-primary btn-small" id="syncProjectsBtn">
+                        <i class="fas fa-sync-alt"></i> Sincronizar
+                    </button>
+                    <button class="btn btn-success btn-small" id="printProjectBtn">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                </div>
+                <div class="copyright">
+                    © 2024 CONSTRUCTORA WM/M&S - "EDIFICANDO EL FUTURO"
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/database.js"></script>
+    <script>
+        let editingProjectId = null;
+        
+        // Actualizar fecha y hora
+        function updateDateTime() {
+            const now = new Date();
+            const dateTimeStr = now.toLocaleDateString('es-GT', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('currentDateTime').textContent = dateTimeStr;
+        }
+        
+        // Cargar proyectos
+        function loadProjects() {
+            const projects = localDB.findAll('ms_projects');
+            const tbody = document.querySelector('#projectsTable tbody');
+            const statusFilter = document.getElementById('statusFilter').value;
+            const searchTerm = document.getElementById('searchProject').value.toLowerCase();
+            
+            // Limpiar tabla
+            tbody.innerHTML = '';
+            
+            // Contadores
+            let pendingCount = 0;
+            let activeCount = 0;
+            let completedCount = 0;
+            
+            // Filtrar y mostrar proyectos
+            projects.forEach(project => {
+                // Aplicar filtros
+                if (statusFilter && project.status !== statusFilter) return;
+                if (searchTerm && !project.name.toLowerCase().includes(searchTerm) && 
+                    !project.clientName?.toLowerCase().includes(searchTerm)) return;
+                
+                // Actualizar contadores
+                if (project.status === 'pending') pendingCount++;
+                else if (project.status === 'active') activeCount++;
+                else if (project.status === 'completed') completedCount++;
+                
+                // Crear fila
+                const row = document.createElement('tr');
+                const statusClass = getStatusClass(project.status);
+                const statusText = getStatusText(project.status);
+                
+                row.innerHTML = `
+                    <td>${project.id.substring(0, 8)}...</td>
+                    <td><strong>${project.name}</strong></td>
+                    <td>${project.clientName || 'N/A'}</td>
+                    <td>${project.location || 'N/A'}</td>
+                    <td>${project.constructionArea ? parseFloat(project.constructionArea).toFixed(2) : 'N/A'}</td>
+                    <td><span class="${statusClass}">${statusText}</span></td>
+                    <td>${project.startDate ? formatDate(project.startDate) : 'N/A'}</td>
+                    <td class="actions">
+                        <button class="btn btn-small btn-secondary" onclick="editProject('${project.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-small btn-info" onclick="viewProjectDetails('${project.id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-small btn-danger" onclick="deleteProject('${project.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        ${project.status === 'pending' ? 
+                            `<button class="btn btn-small btn-success" onclick="activateProject('${project.id}')">
+                                <i class="fas fa-play"></i> Activar
+                            </button>` : ''
+                        }
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Actualizar contadores
+            document.getElementById('pendingCount').textContent = pendingCount;
+            document.getElementById('activeCount').textContent = activeCount;
+            document.getElementById('completedCount').textContent = completedCount;
+            
+            // Mostrar mensaje si no hay resultados
+            if (tbody.children.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="8" class="text-center">No se encontraron proyectos</td>`;
+                tbody.appendChild(row);
+            }
+        }
+        
+        // Obtener clase CSS para estado
+        function getStatusClass(status) {
+            switch(status) {
+                case 'active': return 'text-success';
+                case 'pending': return 'text-warning';
+                case 'completed': return 'text-info';
+                case 'cancelled': return 'text-danger';
+                default: return '';
+            }
+        }
+        
+        // Obtener texto para estado
+        function getStatusText(status) {
+            switch(status) {
+                case 'active': return 'Activo';
+                case 'pending': return 'En espera';
+                case 'completed': return 'Completado';
+                case 'cancelled': return 'Cancelado';
+                default: return status;
+            }
+        }
+        
+        // Formatear fecha
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-GT');
+        }
+        
+        // Mostrar modal de proyecto
+        function showProjectModal(project = null) {
+            const modal = document.getElementById('projectModal');
+            const title = document.getElementById('modalTitle');
+            
+            if (project) {
+                title.textContent = 'Editar Proyecto';
+                editingProjectId = project.id;
+                
+                // Llenar formulario
+                document.getElementById('projectName').value = project.name || '';
+                document.getElementById('clientName').value = project.clientName || '';
+                document.getElementById('clientPhone').value = project.clientPhone || '';
+                document.getElementById('clientEmail').value = project.clientEmail || '';
+                document.getElementById('projectLocation').value = project.location || '';
+                document.getElementById('projectDepartment').value = project.department || '';
+                document.getElementById('landArea').value = project.landArea || '';
+                document.getElementById('constructionArea').value = project.constructionArea || '';
+                document.getElementById('projectType').value = project.type || '';
+                document.getElementById('projectStatus').value = project.status || 'pending';
+                document.getElementById('needsProgram').value = project.needsProgram || '';
+                document.getElementById('startDate').value = project.startDate || '';
+                document.getElementById('estimatedEndDate').value = project.estimatedEndDate || '';
+                document.getElementById('projectNotes').value = project.notes || '';
+            } else {
+                title.textContent = 'Nuevo Proyecto';
+                editingProjectId = null;
+                
+                // Limpiar formulario
+                document.getElementById('projectName').value = '';
+                document.getElementById('clientName').value = '';
+                document.getElementById('clientPhone').value = '';
+                document.getElementById('clientEmail').value = '';
+                document.getElementById('projectLocation').value = '';
+                document.getElementById('projectDepartment').value = '';
+                document.getElementById('landArea').value = '';
+                document.getElementById('constructionArea').value = '';
+                document.getElementById('projectType').value = '';
+                document.getElementById('projectStatus').value = 'pending';
+                document.getElementById('needsProgram').value = '';
+                document.getElementById('startDate').value = '';
+                document.getElementById('estimatedEndDate').value = '';
+                document.getElementById('projectNotes').value = '';
+            }
+            
+            modal.style.display = 'flex';
+        }
+        
+        // Guardar proyecto
+        function saveProject() {
+            const projectData = {
+                name: document.getElementById('projectName').value,
+                clientName: document.getElementById('clientName').value,
+                clientPhone: document.getElementById('clientPhone').value,
+                clientEmail: document.getElementById('clientEmail').value,
+                location: document.getElementById('projectLocation').value,
+                department: document.getElementById('projectDepartment').value,
+                landArea: parseFloat(document.getElementById('landArea').value) || 0,
+                constructionArea: parseFloat(document.getElementById('constructionArea').value) || 0,
+                type: document.getElementById('projectType').value,
+                status: document.getElementById('projectStatus').value,
+                needsProgram: document.getElementById('needsProgram').value,
+                startDate: document.getElementById('startDate').value,
+                estimatedEndDate: document.getElementById('estimatedEndDate').value,
+                notes: document.getElementById('projectNotes').value
+            };
+            
+            // Validaciones
+            if (!projectData.name || !projectData.clientName || !projectData.location || 
+                !projectData.landArea || !projectData.constructionArea) {
+                alert('Por favor complete todos los campos obligatorios (*)');
+                return;
+            }
+            
+            // Guardar o actualizar
+            if (editingProjectId) {
+                projectData.id = editingProjectId;
+                localDB.save('ms_projects', projectData);
+                alert('Proyecto actualizado exitosamente');
+            } else {
+                localDB.save('ms_projects', projectData);
+                alert('Proyecto creado exitosamente');
+                
+                // Si el proyecto se marca como activo, crear registro de presupuesto vacío
+                if (projectData.status === 'active') {
+                    createBudgetForProject(projectData.id);
+                }
+            }
+            
+            // Cerrar modal y recargar lista
+            document.getElementById('projectModal').style.display = 'none';
+            loadProjects();
+        }
+        
+        // Crear presupuesto para proyecto
+        function createBudgetForProject(projectId) {
+            const budgets = localDB.findAll('ms_budgets');
+            const existingBudget = budgets.find(b => b.projectId === projectId);
+            
+            if (!existingBudget) {
+                const newBudget = {
+                    projectId: projectId,
+                    typology: '',
+                    slabType: '',
+                    items: [],
+                    materials: [],
+                    totalCost: 0,
+                    estimatedTime: 0,
+                    status: 'draft'
+                };
+                localDB.save('ms_budgets', newBudget);
+            }
+        }
+        
+        // Editar proyecto
+        function editProject(projectId) {
+            const project = localDB.findById('ms_projects', projectId);
+            if (project) {
+                showProjectModal(project);
+            }
+        }
+        
+        // Ver detalles del proyecto
+        function viewProjectDetails(projectId) {
+            const project = localDB.findById('ms_projects', projectId);
+            if (project) {
+                let details = `
+                    <strong>Nombre:</strong> ${project.name}<br>
+                    <strong>Cliente:</strong> ${project.clientName}<br>
+                    <strong>Teléfono:</strong> ${project.clientPhone || 'N/A'}<br>
+                    <strong>Email:</strong> ${project.clientEmail || 'N/A'}<br>
+                    <strong>Ubicación:</strong> ${project.location}<br>
+                    <strong>Departamento:</strong> ${project.department || 'N/A'}<br>
+                    <strong>Área del terreno:</strong> ${project.landArea} m²<br>
+                    <strong>Área a construir:</strong> ${project.constructionArea} m²<br>
+                    <strong>Tipo:</strong> ${project.type || 'N/A'}<br>
+                    <strong>Estado:</strong> ${getStatusText(project.status)}<br>
+                    <strong>Fecha inicio:</strong> ${project.startDate ? formatDate(project.startDate) : 'N/A'}<br>
+                    <strong>Fecha estimada fin:</strong> ${project.estimatedEndDate ? formatDate(project.estimatedEndDate) : 'N/A'}<br>
+                `;
+                
+                if (project.needsProgram) {
+                    details += `<br><strong>Programa de necesidades:</strong><br>${project.needsProgram}`;
+                }
+                
+                if (project.notes) {
+                    details += `<br><br><strong>Notas:</strong><br>${project.notes}`;
+                }
+                
+                alert(details);
+            }
+        }
+        
+        // Eliminar proyecto
+        function deleteProject(projectId) {
+            if (confirm('¿Está seguro de que desea eliminar este proyecto? Esta acción no se puede deshacer.')) {
+                localDB.delete('ms_projects', projectId);
+                loadProjects();
+                alert('Proyecto eliminado exitosamente');
+            }
+        }
+        
+        // Activar proyecto (cambiar de pending a active)
+        function activateProject(projectId) {
+            const project = localDB.findById('ms_projects', projectId);
+            if (project && project.status === 'pending') {
+                project.status = 'active';
+                localDB.save('ms_projects', project);
+                
+                // Crear presupuesto si no existe
+                createBudgetForProject(projectId);
+                
+                loadProjects();
+                alert('Proyecto activado exitosamente');
+            }
+        }
+        
+        // Exportar proyectos a CSV
+        function exportProjects() {
+            localDB.exportToCSV('ms_projects', 'proyectos_exportados.csv');
+        }
+        
+        // Importar proyectos desde CSV
+        function importProjects() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.csv';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    localDB.importFromCSV('ms_projects', file, function(success, message) {
+                        if (success) {
+                            alert(`Proyectos importados exitosamente. ${message} registros agregados.`);
+                            loadProjects();
+                        } else {
+                            alert('Error al importar proyectos: ' + message);
+                        }
+                    });
+                }
+            };
+            
+            input.click();
+        }
+        
+        // Sincronizar proyectos
+        function syncProjects() {
+            document.getElementById('syncProjectsBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizando...';
+            
+            localDB.syncToCloud('ms_projects', 'https://api.ejemplo.com/projects')
+                .then(syncInfo => {
+                    alert(`Proyectos sincronizados exitosamente. Última sincronización: ${new Date(syncInfo.lastSync).toLocaleString()}`);
+                    document.getElementById('syncProjectsBtn').innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizar';
+                })
+                .catch(error => {
+                    alert('Error al sincronizar: ' + error.message);
+                    document.getElementById('syncProjectsBtn').innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizar';
+                });
+        }
+        
+        // Imprimir reporte de proyectos
+        function printProjects() {
+            const projects = localDB.findAll('ms_projects');
+            const filteredStatus = document.getElementById('statusFilter').value;
+            const searchTerm = document.getElementById('searchProject').value.toLowerCase();
+            
+            // Filtrar proyectos
+            const filteredProjects = projects.filter(project => {
+                if (filteredStatus && project.status !== filteredStatus) return false;
+                if (searchTerm && !project.name.toLowerCase().includes(searchTerm) && 
+                    !project.clientName?.toLowerCase().includes(searchTerm)) return false;
+                return true;
+            });
+            
+            // Crear contenido para imprimir
+            let printContent = `
+                <html>
+                <head>
+                    <title>Reporte de Proyectos - CONSTRUCTORA WM/M&S</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; }
+                        h1 { color: #1e3a8a; text-align: center; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th { background-color: #1e3a8a; color: white; padding: 10px; text-align: left; }
+                        td { padding: 8px; border-bottom: 1px solid #ddd; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>CONSTRUCTORA WM/M&S</h1>
+                        <h3>"EDIFICANDO EL FUTURO"</h3>
+                        <h2>Reporte de Proyectos</h2>
+                        <p>Fecha: ${new Date().toLocaleDateString('es-GT')}</p>
+                    </div>
+            `;
+            
+            if (filteredProjects.length > 0) {
+                printContent += `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Proyecto</th>
+                                <th>Cliente</th>
+                                <th>Ubicación</th>
+                                <th>Área (m²)</th>
+                                <th>Estado</th>
+                                <th>Fecha Inicio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                filteredProjects.forEach(project => {
+                    printContent += `
+                        <tr>
+                            <td>${project.name}</td>
+                            <td>${project.clientName || 'N/A'}</td>
+                            <td>${project.location || 'N/A'}</td>
+                            <td>${project.constructionArea || 'N/A'}</td>
+                            <td>${getStatusText(project.status)}</td>
+                            <td>${project.startDate ? formatDate(project.startDate) : 'N/A'}</td>
+                        </tr>
+                    `;
+                });
+                
+                printContent += `
+                        </tbody>
+                    </table>
+                    <div class="footer">
+                        <p>Total de proyectos: ${filteredProjects.length}</p>
+                        <p>Generado por Sistema M&S Constructor v2.0</p>
+                    </div>
+                `;
+            } else {
+                printContent += `<p>No hay proyectos para mostrar con los filtros actuales.</p>`;
+            }
+            
+            printContent += `</body></html>`;
+            
+            // Abrir ventana de impresión
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 60000); // Actualizar cada minuto
+            
+            // Cargar proyectos
+            loadProjects();
+            
+            // Event listeners
+            document.getElementById('newProjectBtn').addEventListener('click', () => showProjectModal());
+            document.getElementById('saveProjectBtn').addEventListener('click', saveProject);
+            document.getElementById('cancelProjectBtn').addEventListener('click', () => {
+                document.getElementById('projectModal').style.display = 'none';
+            });
+            
+            document.querySelector('.close-modal').addEventListener('click', () => {
+                document.getElementById('projectModal').style.display = 'none';
+            });
+            
+            document.getElementById('statusFilter').addEventListener('change', loadProjects);
+            document.getElementById('searchProject').addEventListener('input', loadProjects);
+            
+            document.getElementById('exportProjectsBtn').addEventListener('click', exportProjects);
+            document.getElementById('importProjectsBtn').addEventListener('click', importProjects);
+            document.getElementById('syncProjectsBtn').addEventListener('click', syncProjects);
+            document.getElementById('printProjectBtn').addEventListener('click', printProjects);
+            
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                if (confirm('¿Está seguro de que desea salir del sistema?')) {
+                    window.location.href = 'index.html';
+                }
+            });
+            
+            // Cerrar modal haciendo clic fuera
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('projectModal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

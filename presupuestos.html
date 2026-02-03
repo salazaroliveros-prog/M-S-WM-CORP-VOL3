@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&S Constructor - Presupuestos y Cuantificación</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .calculation-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+        }
+        
+        .work-item {
+            background: white;
+            border-left: 4px solid var(--accent-gold);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .work-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .work-item-title {
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+        
+        .work-item-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .material-breakdown {
+            background: var(--gray-light);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .cost-summary {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            border: 2px solid var(--accent-gold);
+            margin-top: 2rem;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        .summary-row.total {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--primary-blue);
+            border-top: 2px solid var(--gray-medium);
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+        }
+        
+        .typology-selector {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        
+        .typology-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--primary-blue);
+            background: white;
+            color: var(--primary-blue);
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .typology-btn.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+        
+        .typology-btn:hover:not(.active) {
+            background: rgba(30, 58, 138, 0.1);
+        }
+        
+        .slab-cost-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .slab-cost-table th {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        
+        .slab-cost-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        .slab-cost-table tr:hover {
+            background: rgba(30, 58, 138, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div>
+                    <div class="logo-small">CONSTRUCTORA WM/M&S</div>
+                    <div class="slogan-small">EDIFICANDO EL FUTURO</div>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="datetime" id="currentDateTime"></div>
+                <button class="btn btn-danger btn-small" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Selector de proyecto -->
+            <div class="filters-container">
+                <h2 class="section-title">Presupuestos y Cuantificación</h2>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="projectSelect">Seleccionar Proyecto *</label>
+                        <select id="projectSelect">
+                            <option value="">-- Seleccione un proyecto --</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="budgetStatus">Estado del Presupuesto</label>
+                        <select id="budgetStatus">
+                            <option value="draft">Borrador</option>
+                            <option value="pending">Pendiente de Aprobación</option>
+                            <option value="approved">Aprobado</option>
+                            <option value="executing">En Ejecución</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <button class="btn btn-primary" id="loadBudgetBtn" disabled>
+                            <i class="fas fa-search"></i> Cargar Presupuesto
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del proyecto seleccionado -->
+            <div class="form-section hidden" id="projectInfoSection">
+                <h2 class="section-title">Información del Proyecto</h2>
+                <div class="form-grid" id="projectInfoGrid">
+                    <!-- Información cargada dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Configuración del presupuesto -->
+            <div class="form-section hidden" id="budgetConfigSection">
+                <h2 class="section-title">Configuración del Presupuesto</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="typologySelect">Tipología *</label>
+                        <select id="typologySelect">
+                            <option value="">Seleccionar tipología</option>
+                            <option value="residencial">RESIDENCIAL</option>
+                            <option value="comercial">COMERCIAL</option>
+                            <option value="industrial">INDUSTRIAL</option>
+                            <option value="civil">CIVIL</option>
+                            <option value="publica">PÚBLICA</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="slabTypeSelect">Tipo de Cubierta/Entrepiso *</label>
+                        <select id="slabTypeSelect">
+                            <option value="">Seleccionar tipo</option>
+                            <option value="losa_solida">Losa Sólida</option>
+                            <option value="losa_prefabricada">Losa Prefabricada</option>
+                            <option value="estructura_metalica">Estructura Metálica</option>
+                            <option value="pergola_madera">Pérgola de Madera</option>
+                            <option value="pergola_metal">Pérgola Metal + Traslúcida</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="locationFactor">Factor de Ubicación</label>
+                        <select id="locationFactor">
+                            <option value="1.00">Central (1.00)</option>
+                            <option value="1.10">Sur / Costa (1.10)</option>
+                            <option value="1.175">Occidente (1.175)</option>
+                            <option value="1.30">Norte (1.30)</option>
+                            <option value="1.125">Oriente (1.125)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="accessDifficulty">Dificultad de Acceso</label>
+                        <select id="accessDifficulty">
+                            <option value="1.00">Normal (0%)</option>
+                            <option value="1.05">Difícil (+5%)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="buildingHeight">Altura de Obra</label>
+                        <select id="buildingHeight">
+                            <option value="1.00">1-2 Niveles (0%)</option>
+                            <option value="1.08">3+ Niveles (+8%)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="wasteFactor">Factor de Desperdicio</label>
+                        <select id="wasteFactor">
+                            <option value="1.07">Estándar (7%)</option>
+                            <option value="1.10">Alto (10%)</option>
+                            <option value="1.05">Bajo (5%)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Tabla de costos de losas -->
+                <div class="mt-3" id="slabCostTableContainer">
+                    <h3>Costos de Losas y Cubiertas (Referencia)</h3>
+                    <table class="slab-cost-table">
+                        <thead>
+                            <tr>
+                                <th>Tipo de Cubierta / Losa</th>
+                                <th>Descripción Técnica</th>
+                                <th>Costo Estimado (Q/m²)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Losa Sólida</strong></td>
+                                <td>Concreto f'c=3000 psi, espesor 10cm, refuerzo de acero grado 40/60</td>
+                                <td>Q 680.00 - Q 850.00</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Losa Prefabricada</strong></td>
+                                <td>Sistema de vigueta y bovedilla (concreto/EPS) + capa de compresión</td>
+                                <td>Q 480.00 - Q 620.00</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Estructura Metálica + Lámina</strong></td>
+                                <td>Costaneras de metal legítimas + Lámina troquelada Galvalume Cal. 26</td>
+                                <td>Q 350.00 - Q 475.00</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Estructura de Madera (Pérgola)</strong></td>
+                                <td>Vigas de madera tratada (Pino/Ciprés) + acabado protector</td>
+                                <td>Q 950.00 - Q 1,250.00</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Pérgola Metal + Traslúcida</strong></td>
+                                <td>Estructura de tubo industrial + Policarbonato 6mm o lámina acrílica</td>
+                                <td>Q 580.00 - Q 780.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="text-right mt-3">
+                    <button class="btn btn-primary" id="generateWorkItemsBtn">
+                        <i class="fas fa-cogs"></i> Generar Renglones de Trabajo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Renglones de trabajo -->
+            <div class="form-section hidden" id="workItemsSection">
+                <h2 class="section-title">
+                    Renglones de Trabajo - 
+                    <span id="currentTypology">RESIDENCIAL</span>
+                </h2>
+                <p class="mb-3">Ingrese las cantidades de trabajo para cada renglón. Los cálculos se realizan automáticamente.</p>
+                
+                <!-- Selector rápido de tipología -->
+                <div class="typology-selector">
+                    <button class="typology-btn active" data-typology="residencial">RESIDENCIAL</button>
+                    <button class="typology-btn" data-typology="comercial">COMERCIAL</button>
+                    <button class="typology-btn" data-typology="industrial">INDUSTRIAL</button>
+                    <button class="typology-btn" data-typology="civil">CIVIL</button>
+                    <button class="typology-btn" data-typology="publica">PÚBLICA</button>
+                </div>
+                
+                <!-- Lista de renglones -->
+                <div id="workItemsList">
+                    <!-- Renglones cargados dinámicamente -->
+                </div>
+                
+                <!-- Botón para agregar renglón personalizado -->
+                <div class="text-center mt-3">
+                    <button class="btn btn-secondary" id="addCustomItemBtn">
+                        <i class="fas fa-plus"></i> Agregar Renglón Personalizado
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resumen de costos -->
+            <div class="form-section hidden" id="costSummarySection">
+                <h2 class="section-title">Resumen de Costos y APU</h2>
+                
+                <!-- Cálculos intermedios -->
+                <div class="calculation-card">
+                    <h3 class="text-center mb-2">Cálculo de Costos Indirectos (AUI)</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="adminPercentage">Administración (%)</label>
+                            <input type="number" id="adminPercentage" value="20" step="0.1" min="0" max="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="utilityPercentage">Utilidad (%)</label>
+                            <input type="number" id="utilityPercentage" value="12" step="0.1" min="0" max="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="contingencyPercentage">Imprevistos (%)</label>
+                            <input type="number" id="contingencyPercentage" value="3" step="0.1" min="0" max="10">
+                        </div>
+                    </div>
+                    <div class="text-center mt-2">
+                        <button class="btn btn-secondary btn-small" id="calculateAUIBtn">
+                            <i class="fas fa-calculator"></i> Calcular AUI
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Resumen final -->
+                <div class="cost-summary">
+                    <h3 class="text-center mb-3">Resumen Financiero del Proyecto</h3>
+                    
+                    <div class="summary-row">
+                        <span>Costo Directo Total (Materiales + Mano de Obra + Equipo):</span>
+                        <span id="totalDirectCost">Q 0.00</span>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span>Costos Indirectos (AUI):</span>
+                        <span id="totalIndirectCost">Q 0.00</span>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span>Subtotal (Sin IVA):</span>
+                        <span id="subtotalWithoutIVA">Q 0.00</span>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span>IVA (12%):</span>
+                        <span id="ivaAmount">Q 0.00</span>
+                    </div>
+                    
+                    <div class="summary-row total">
+                        <span>TOTAL GENERAL (Con IVA):</span>
+                        <span id="totalWithIVA">Q 0.00</span>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h4>Desglose de Porcentajes</h4>
+                        <div class="summary-row">
+                            <span>Costo Directo:</span>
+                            <span id="directCostPercentage">0.00%</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Costos Indirectos:</span>
+                            <span id="indirectCostPercentage">0.00%</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>IVA:</span>
+                            <span id="ivaPercentage">0.00%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Información adicional -->
+                    <div class="mt-4">
+                        <h4>Información del Proyecto</h4>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="estimatedDuration">Duración Estimada (días)</label>
+                                <input type="number" id="estimatedDuration" min="1" value="90">
+                            </div>
+                            <div class="form-group">
+                                <label for="manpowerRequired">Mano de Obra Requerida (personas)</label>
+                                <input type="number" id="manpowerRequired" min="1" value="8">
+                            </div>
+                            <div class="form-group">
+                                <label for="profitMargin">Margen de Utilidad Final (%)</label>
+                                <input type="number" id="profitMargin" value="15" step="0.1" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="text-center mt-4">
+                    <button class="btn btn-success" id="saveBudgetBtn">
+                        <i class="fas fa-save"></i> Guardar Presupuesto
+                    </button>
+                    <button class="btn btn-primary" id="updateCalculationsBtn">
+                        <i class="fas fa-sync-alt"></i> Actualizar Cálculos
+                    </button>
+                    <button class="btn btn-info" id="exportBudgetBtn">
+                        <i class="fas fa-file-export"></i> Exportar a CSV
+                    </button>
+                    <button class="btn btn-warning" id="printBudgetBtn">
+                        <i class="fas fa-print"></i> Imprimir Reporte
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navegación -->
+            <div class="navigation">
+                <a href="inicio.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="nav-title">INICIO</div>
+                    <div class="nav-desc">Registro de ingresos/gastos</div>
+                </a>
+
+                <a href="proyectos.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="nav-title">PROYECTOS</div>
+                    <div class="nav-desc">Gestión de proyectos</div>
+                </a>
+
+                <a href="seguimiento.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="nav-title">SEGUIMIENTO</div>
+                    <div class="nav-desc">Control físico y financiero</div>
+                </a>
+
+                <a href="dashboard.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="nav-title">DASHBOARD</div>
+                    <div class="nav-desc">Tablero principal</div>
+                </a>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <button class="btn btn-secondary btn-small" id="syncBudgetBtn">
+                        <i class="fas fa-sync-alt"></i> Sincronizar
+                    </button>
+                </div>
+                <div class="copyright">
+                    © 2024 CONSTRUCTORA WM/M&S - "EDIFICANDO EL FUTURO"
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/database.js"></script>
+    <script>
+        // Variables globales
+        let currentProjectId = null;
+        let currentBudget = null;
+        let workItemsByTypology = {
+            residencial: [],
+            comercial: [],
+            industrial: [],
+            civil: [],
+            publica: []
+        };
+        
+        // Datos de renglones por tipología
+        const WORK_ITEMS_DATA = {
+            residencial: [
+                { id: 'res_01', name: 'Limpieza y chapeo del terreno', unit: 'm2', unitCost: 15, category: 'preparacion' },
+                { id: 'res_02', name: 'Trazo y nivelación', unit: 'global', unitCost: 1200, category: 'preparacion' },
+                { id: 'res_03', name: 'Excavación para cimentación', unit: 'm3', unitCost: 85, category: 'cimentacion' },
+                { id: 'res_04', name: 'Cimentación (Armado y fundición)', unit: 'm3', unitCost: 1250, category: 'cimentacion' },
+                { id: 'res_05', name: 'Instalaciones hidrosanitarias bajo suelo', unit: 'ml', unitCost: 45, category: 'instalaciones' },
+                { id: 'res_06', name: 'Levantado de muros (Mampostería)', unit: 'm2', unitCost: 180, category: 'estructura' },
+                { id: 'res_07', name: 'Instalación de columnas de amarre', unit: 'unidad', unitCost: 350, category: 'estructura' },
+                { id: 'res_08', name: 'Vigas de amarre y soleras intermedias', unit: 'ml', unitCost: 280, category: 'estructura' },
+                { id: 'res_09', name: 'Instalaciones eléctricas (Ducteado)', unit: 'ml', unitCost: 38, category: 'instalaciones' },
+                { id: 'res_10', name: 'Instalación de Cubierta/Losa', unit: 'm2', unitCost: 765, category: 'estructura' },
+                { id: 'res_11', name: 'Repello y cernido de muros internos', unit: 'm2', unitCost: 65, category: 'acabados' },
+                { id: 'res_12', name: 'Repello y cernido de fachadas', unit: 'm2', unitCost: 75, category: 'acabados' },
+                { id: 'res_13', name: 'Instalación de tubería de agua potable', unit: 'ml', unitCost: 52, category: 'instalaciones' },
+                { id: 'res_14', name: 'Impermeabilización de losas/techos', unit: 'm2', unitCost: 95, category: 'acabados' },
+                { id: 'res_15', name: 'Colocación de pisos y azulejos', unit: 'm2', unitCost: 120, category: 'acabados' },
+                { id: 'res_16', name: 'Ventanería (Marcos de aluminio/PVC)', unit: 'm2', unitCost: 320, category: 'acabados' },
+                { id: 'res_17', name: 'Puertas interiores y principales', unit: 'unidad', unitCost: 850, category: 'acabados' },
+                { id: 'res_18', name: 'Pintura base en muros', unit: 'm2', unitCost: 42, category: 'acabados' },
+                { id: 'res_19', name: 'Instalación de muebles de cocina', unit: 'global', unitCost: 4500, category: 'acabados' },
+                { id: 'res_20', name: 'Instalación de closets', unit: 'ml', unitCost: 380, category: 'acabados' }
+            ],
+            comercial: [
+                { id: 'com_01', name: 'Movimiento de tierras masivo', unit: 'm3', unitCost: 65, category: 'preparacion' },
+                { id: 'com_02', name: 'Cimentación profunda (Pilotes)', unit: 'ml', unitCost: 850, category: 'cimentacion' },
+                { id: 'com_03', name: 'Estructura principal (Marcos de acero)', unit: 'ton', unitCost: 12500, category: 'estructura' },
+                { id: 'com_04', name: 'Instalación de sistemas contra incendios', unit: 'm2', unitCost: 95, category: 'instalaciones' },
+                { id: 'com_05', name: 'Sistemas de Aire Acondicionado', unit: 'ton', unitCost: 8500, category: 'instalaciones' }
+            ],
+            industrial: [
+                { id: 'ind_01', name: 'Topografía y descapote', unit: 'm2', unitCost: 25, category: 'preparacion' },
+                { id: 'ind_02', name: 'Compactación de suelo', unit: 'm3', unitCost: 45, category: 'preparacion' },
+                { id: 'ind_03', name: 'Cimentación para pedestales de acero', unit: 'unidad', unitCost: 2800, category: 'cimentacion' },
+                { id: 'ind_04', name: 'Montaje de columnas de acero', unit: 'ton', unitCost: 11500, category: 'estructura' },
+                { id: 'ind_05', name: 'Instalación de marcos de rigidez', unit: 'ton', unitCost: 9800, category: 'estructura' }
+            ],
+            civil: [
+                { id: 'civ_01', name: 'Estudios hidrológicos y de suelos', unit: 'global', unitCost: 8500, category: 'preparacion' },
+                { id: 'civ_02', name: 'Desvío de cauces o tráfico vehicular', unit: 'global', unitCost: 12500, category: 'preparacion' },
+                { id: 'civ_03', name: 'Excavación para estribos y pilas', unit: 'm3', unitCost: 95, category: 'cimentacion' },
+                { id: 'civ_04', name: 'Hincado de pilotes o construcción de zapatas', unit: 'ml', unitCost: 950, category: 'cimentacion' },
+                { id: 'civ_05', name: 'Construcción de estribos de concreto armado', unit: 'm3', unitCost: 1350, category: 'estructura' }
+            ],
+            publica: [
+                { id: 'pub_01', name: 'Cerramiento perimetral de obra', unit: 'ml', unitCost: 85, category: 'preparacion' },
+                { id: 'pub_02', name: 'Demoliciones previas (si aplica)', unit: 'm3', unitCost: 75, category: 'preparacion' },
+                { id: 'pub_03', name: 'Terracería y plataformas de nivel', unit: 'm3', unitCost: 65, category: 'preparacion' },
+                { id: 'pub_04', name: 'Cimentaciones reforzadas', unit: 'm3', unitCost: 1450, category: 'cimentacion' },
+                { id: 'pub_05', name: 'Estructura de soporte (Vigas/Columnas)', unit: 'm3', unitCost: 1250, category: 'estructura' }
+            ]
+        };
+        
+        // Materiales por renglón (ejemplo)
+        const MATERIALS_BY_ITEM = {
+            'res_04': [
+                { name: 'Cemento', unit: 'saco', quantityPerUnit: 7.5, unitCost: 45 },
+                { name: 'Arena', unit: 'm3', quantityPerUnit: 0.5, unitCost: 120 },
+                { name: 'Grava', unit: 'm3', quantityPerUnit: 0.75, unitCost: 135 },
+                { name: 'Varilla 3/8"', unit: 'quintal', quantityPerUnit: 1.2, unitCost: 280 },
+                { name: 'Alambre de amarre', unit: 'libra', quantityPerUnit: 0.5, unitCost: 8 }
+            ],
+            'res_06': [
+                { name: 'Ladrillo', unit: 'unidad', quantityPerUnit: 45, unitCost: 1.2 },
+                { name: 'Cemento', unit: 'saco', quantityPerUnit: 0.35, unitCost: 45 },
+                { name: 'Arena', unit: 'm3', quantityPerUnit: 0.025, unitCost: 120 },
+                { name: 'Cal', unit: 'saco', quantityPerUnit: 0.15, unitCost: 35 }
+            ]
+        };
+        
+        // Actualizar fecha y hora
+        function updateDateTime() {
+            const now = new Date();
+            const dateTimeStr = now.toLocaleDateString('es-GT', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('currentDateTime').textContent = dateTimeStr;
+        }
+        
+        // Cargar proyectos en el selector
+        function loadProjects() {
+            const projects = localDB.findAll('ms_projects');
+            const projectSelect = document.getElementById('projectSelect');
+            
+            // Limpiar opciones excepto la primera
+            while (projectSelect.options.length > 1) {
+                projectSelect.remove(1);
+            }
+            
+            // Agregar proyectos activos y pendientes
+            projects.forEach(project => {
+                if (project.status === 'active' || project.status === 'pending') {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = `${project.name} - ${project.clientName} (${project.status === 'active' ? 'Activo' : 'Pendiente'})`;
+                    projectSelect.appendChild(option);
+                }
+            });
+            
+            // Habilitar botón de cargar si hay proyectos
+            document.getElementById('loadBudgetBtn').disabled = projects.length === 0;
+        }
+        
+        // Cargar presupuesto del proyecto
+        function loadBudget() {
+            currentProjectId = document.getElementById('projectSelect').value;
+            if (!currentProjectId) {
+                alert('Por favor seleccione un proyecto');
+                return;
+            }
+            
+            // Obtener información del proyecto
+            const project = localDB.findById('ms_projects', currentProjectId);
+            if (!project) {
+                alert('Proyecto no encontrado');
+                return;
+            }
+            
+            // Mostrar información del proyecto
+            document.getElementById('projectInfoSection').classList.remove('hidden');
+            document.getElementById('projectInfoGrid').innerHTML = `
+                <div class="form-group">
+                    <label>Nombre del Proyecto</label>
+                    <input type="text" value="${project.name}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Cliente</label>
+                    <input type="text" value="${project.clientName}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Ubicación</label>
+                    <input type="text" value="${project.location}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Área a Construir (m²)</label>
+                    <input type="text" value="${project.constructionArea || '0.00'}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Estado del Proyecto</label>
+                    <input type="text" value="${project.status === 'active' ? 'Activo' : 'Pendiente'}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Proyecto</label>
+                    <input type="text" value="${project.type || 'No especificado'}" readonly>
+                </div>
+            `;
+            
+            // Mostrar configuración del presupuesto
+            document.getElementById('budgetConfigSection').classList.remove('hidden');
+            
+            // Cargar presupuesto existente si hay
+            const budgets = localDB.findAll('ms_budgets');
+            currentBudget = budgets.find(b => b.projectId === currentProjectId);
+            
+            if (currentBudget) {
+                // Llenar configuración con datos existentes
+                document.getElementById('typologySelect').value = currentBudget.typology || '';
+                document.getElementById('slabTypeSelect').value = currentBudget.slabType || '';
+                document.getElementById('budgetStatus').value = currentBudget.status || 'draft';
+                
+                // Cargar renglones si existen
+                if (currentBudget.items && currentBudget.items.length > 0) {
+                    workItemsByTypology[currentBudget.typology] = currentBudget.items;
+                    showWorkItems(currentBudget.typology);
+                }
+            } else {
+                // Establecer tipo de proyecto como tipología por defecto
+                if (project.type) {
+                    document.getElementById('typologySelect').value = project.type;
+                }
+            }
+            
+            // Desplazar a la sección de configuración
+            document.getElementById('budgetConfigSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Generar renglones de trabajo
+        function generateWorkItems() {
+            const typology = document.getElementById('typologySelect').value;
+            const slabType = document.getElementById('slabTypeSelect').value;
+            
+            if (!typology || !slabType) {
+                alert('Por favor seleccione una tipología y tipo de cubierta');
+                return;
+            }
+            
+            // Obtener renglones para la tipología seleccionada
+            const workItems = WORK_ITEMS_DATA[typology] || [];
+            
+            // Ajustar costo del renglón de cubierta según el tipo seleccionado
+            const slabCosts = {
+                'losa_solida': 765,
+                'losa_prefabricada': 550,
+                'estructura_metalica': 412.5,
+                'pergola_madera': 1100,
+                'pergola_metal': 680,
+                'otros': 500
+            };
+            
+            // Actualizar costo del renglón de cubierta
+            workItems.forEach(item => {
+                if (item.name.includes('Cubierta') || item.name.includes('Losa')) {
+                    item.unitCost = slabCosts[slabType] || item.unitCost;
+                }
+            });
+            
+            // Guardar en variable global
+            workItemsByTypology[typology] = [...workItems];
+            
+            // Mostrar renglones
+            showWorkItems(typology);
+        }
+        
+        // Mostrar renglones de trabajo
+        function showWorkItems(typology) {
+            const workItems = workItemsByTypology[typology] || [];
+            
+            // Actualizar tipología actual
+            document.getElementById('currentTypology').textContent = typology.toUpperCase();
+            
+            // Mostrar sección de renglones
+            document.getElementById('workItemsSection').classList.remove('hidden');
+            
+            // Mostrar lista de renglones
+            const container = document.getElementById('workItemsList');
+            container.innerHTML = '';
+            
+            workItems.forEach((item, index) => {
+                const workItemElement = document.createElement('div');
+                workItemElement.className = 'work-item';
+                workItemElement.dataset.id = item.id;
+                
+                // Verificar si ya tiene cantidad guardada
+                const savedItem = currentBudget?.items?.find(i => i.id === item.id);
+                const quantity = savedItem?.quantity || 0;
+                const totalCost = quantity * item.unitCost;
+                
+                workItemElement.innerHTML = `
+                    <div class="work-item-header">
+                        <div class="work-item-title">${index + 1}. ${item.name}</div>
+                        <div>
+                            <span class="text-gold">Costo unitario: Q ${item.unitCost.toFixed(2)} / ${item.unit}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="work-item-inputs">
+                        <div class="form-group">
+                            <label for="quantity_${item.id}">Cantidad</label>
+                            <input type="number" id="quantity_${item.id}" 
+                                   value="${quantity}" 
+                                   step="0.01" min="0" 
+                                   data-unit-cost="${item.unitCost}"
+                                   onchange="calculateItemTotal('${item.id}')"
+                                   placeholder="Ingrese cantidad">
+                        </div>
+                        <div class="form-group">
+                            <label>Unidad</label>
+                            <input type="text" value="${item.unit}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Costo Unitario (Q)</label>
+                            <input type="number" value="${item.unitCost.toFixed(2)}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Total (Q)</label>
+                            <input type="number" id="total_${item.id}" 
+                                   value="${totalCost.toFixed(2)}" 
+                                   readonly class="text-success">
+                        </div>
+                    </div>
+                    
+                    <div class="material-breakdown" id="materials_${item.id}" style="display: none;">
+                        <h5>Desglose de Materiales (Por ${item.unit}):</h5>
+                        <div id="materials_list_${item.id}"></div>
+                    </div>
+                    
+                    <div class="text-right mt-2">
+                        <button class="btn btn-small btn-secondary" onclick="toggleMaterials('${item.id}')">
+                            <i class="fas fa-boxes"></i> Ver Materiales
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(workItemElement);
+                
+                // Cargar materiales si existen
+                if (MATERIALS_BY_ITEM[item.id]) {
+                    loadMaterialsForItem(item.id, quantity);
+                }
+            });
+            
+            // Mostrar sección de resumen de costos
+            document.getElementById('costSummarySection').classList.remove('hidden');
+            
+            // Calcular totales
+            calculateTotals();
+            
+            // Desplazar a la sección de renglones
+            container.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Calcular total de un renglón
+        function calculateItemTotal(itemId) {
+            const quantityInput = document.getElementById(`quantity_${itemId}`);
+            const totalInput = document.getElementById(`total_${itemId}`);
+            const unitCost = parseFloat(quantityInput.dataset.unitCost);
+            const quantity = parseFloat(quantityInput.value) || 0;
+            
+            const total = quantity * unitCost;
+            totalInput.value = total.toFixed(2);
+            
+            // Actualizar materiales si existen
+            if (MATERIALS_BY_ITEM[itemId]) {
+                loadMaterialsForItem(itemId, quantity);
+            }
+            
+            // Recalcular totales generales
+            calculateTotals();
+        }
+        
+        // Cargar materiales para un renglón
+        function loadMaterialsForItem(itemId, quantity) {
+            const materials = MATERIALS_BY_ITEM[itemId];
+            if (!materials) return;
+            
+            const container = document.getElementById(`materials_list_${itemId}`);
+            container.innerHTML = '';
+            
+            let totalMaterialsCost = 0;
+            
+            materials.forEach(material => {
+                const materialQuantity = material.quantityPerUnit * quantity;
+                const materialCost = materialQuantity * material.unitCost;
+                totalMaterialsCost += materialCost;
+                
+                const materialRow = document.createElement('div');
+                materialRow.className = 'summary-row';
+                materialRow.innerHTML = `
+                    <span>${material.name} (${material.unit}):</span>
+                    <span>${materialQuantity.toFixed(2)} x Q ${material.unitCost.toFixed(2)} = Q ${materialCost.toFixed(2)}</span>
+                `;
+                container.appendChild(materialRow);
+            });
+            
+            // Agregar total de materiales
+            const totalRow = document.createElement('div');
+            totalRow.className = 'summary-row total';
+            totalRow.innerHTML = `
+                <span><strong>Total Materiales:</strong></span>
+                <span><strong>Q ${totalMaterialsCost.toFixed(2)}</strong></span>
+            `;
+            container.appendChild(totalRow);
+        }
+        
+        // Mostrar/ocultar materiales
+        function toggleMaterials(itemId) {
+            const materialsDiv = document.getElementById(`materials_${itemId}`);
+            if (materialsDiv.style.display === 'none') {
+                materialsDiv.style.display = 'block';
+            } else {
+                materialsDiv.style.display = 'none';
+            }
+        }
+        
+        // Calcular totales generales
+        function calculateTotals() {
+            let totalDirectCost = 0;
+            
+            // Sumar totales de todos los renglones
+            const workItems = document.querySelectorAll('.work-item');
+            workItems.forEach(item => {
+                const itemId = item.dataset.id;
+                const totalInput = document.getElementById(`total_${itemId}`);
+                if (totalInput) {
+                    totalDirectCost += parseFloat(totalInput.value) || 0;
+                }
+            });
+            
+            // Aplicar factores de ajuste
+            const locationFactor = parseFloat(document.getElementById('locationFactor').value) || 1;
+            const accessDifficulty = parseFloat(document.getElementById('accessDifficulty').value) || 1;
+            const buildingHeight = parseFloat(document.getElementById('buildingHeight').value) || 1;
+            const wasteFactor = parseFloat(document.getElementById('wasteFactor').value) || 1;
+            
+            const adjustmentFactor = locationFactor * accessDifficulty * buildingHeight * wasteFactor;
+            const adjustedDirectCost = totalDirectCost * adjustmentFactor;
+            
+            // Calcular AUI
+            const adminPercentage = parseFloat(document.getElementById('adminPercentage').value) || 20;
+            const utilityPercentage = parseFloat(document.getElementById('utilityPercentage').value) || 12;
+            const contingencyPercentage = parseFloat(document.getElementById('contingencyPercentage').value) || 3;
+            
+            const auiFactor = 1 + (adminPercentage + utilityPercentage + contingencyPercentage) / 100;
+            const indirectCost = adjustedDirectCost * (auiFactor - 1);
+            const subtotalWithoutIVA = adjustedDirectCost * auiFactor;
+            
+            // Calcular IVA
+            const ivaRate = 12; // Guatemala
+            const ivaAmount = subtotalWithoutIVA * (ivaRate / 100);
+            const totalWithIVA = subtotalWithoutIVA + ivaAmount;
+            
+            // Calcular porcentajes
+            const directCostPercentage = (adjustedDirectCost / totalWithIVA) * 100;
+            const indirectCostPercentage = (indirectCost / totalWithIVA) * 100;
+            const ivaPercentage = (ivaAmount / totalWithIVA) * 100;
+            
+            // Actualizar interfaz
+            document.getElementById('totalDirectCost').textContent = `Q ${adjustedDirectCost.toFixed(2)}`;
+            document.getElementById('totalIndirectCost').textContent = `Q ${indirectCost.toFixed(2)}`;
+            document.getElementById('subtotalWithoutIVA').textContent = `Q ${subtotalWithoutIVA.toFixed(2)}`;
+            document.getElementById('ivaAmount').textContent = `Q ${ivaAmount.toFixed(2)}`;
+            document.getElementById('totalWithIVA').textContent = `Q ${totalWithIVA.toFixed(2)}`;
+            
+            document.getElementById('directCostPercentage').textContent = `${directCostPercentage.toFixed(2)}%`;
+            document.getElementById('indirectCostPercentage').textContent = `${indirectCostPercentage.toFixed(2)}%`;
+            document.getElementById('ivaPercentage').textContent = `${ivaPercentage.toFixed(2)}%`;
+            
+            // Calcular margen de utilidad final
+            const profitMargin = (utilityPercentage / 100) * (adjustedDirectCost / totalWithIVA) * 100;
+            document.getElementById('profitMargin').value = profitMargin.toFixed(1);
+        }
+        
+        // Calcular AUI
+        function calculateAUI() {
+            calculateTotals();
+            alert('Costos indirectos (AUI) calculados y aplicados.');
+        }
+        
+        // Guardar presupuesto
+        function saveBudget() {
+            if (!currentProjectId) {
+                alert('No hay proyecto seleccionado');
+                return;
+            }
+            
+            const typology = document.getElementById('typologySelect').value;
+            const slabType = document.getElementById('slabTypeSelect').value;
+            const status = document.getElementById('budgetStatus').value;
+            
+            if (!typology || !slabType) {
+                alert('Por favor complete la tipología y tipo de cubierta');
+                return;
+            }
+            
+            // Recolectar datos de renglones
+            const workItems = [];
+            const workItemElements = document.querySelectorAll('.work-item');
+            
+            workItemElements.forEach(item => {
+                const itemId = item.dataset.id;
+                const quantityInput = document.getElementById(`quantity_${itemId}`);
+                const totalInput = document.getElementById(`total_${itemId}`);
+                
+                if (quantityInput && totalInput) {
+                    const quantity = parseFloat(quantityInput.value) || 0;
+                    if (quantity > 0) {
+                        workItems.push({
+                            id: itemId,
+                            name: item.querySelector('.work-item-title').textContent.replace(/^\d+\.\s/, ''),
+                            quantity: quantity,
+                            unit: quantityInput.dataset.unit,
+                            unitCost: parseFloat(quantityInput.dataset.unitCost),
+                            total: parseFloat(totalInput.value) || 0
+                        });
+                    }
+                }
+            });
+            
+            // Calcular totales
+            calculateTotals();
+            const totalDirectCost = parseFloat(document.getElementById('totalDirectCost').textContent.replace('Q ', '')) || 0;
+            const totalWithIVA = parseFloat(document.getElementById('totalWithIVA').textContent.replace('Q ', '')) || 0;
+            
+            // Crear objeto de presupuesto
+            const budgetData = {
+                projectId: currentProjectId,
+                typology: typology,
+                slabType: slabType,
+                status: status,
+                items: workItems,
+                materials: [], // Se podría expandir para incluir desglose completo
+                locationFactor: parseFloat(document.getElementById('locationFactor').value),
+                accessDifficulty: parseFloat(document.getElementById('accessDifficulty').value),
+                buildingHeight: parseFloat(document.getElementById('buildingHeight').value),
+                wasteFactor: parseFloat(document.getElementById('wasteFactor').value),
+                adminPercentage: parseFloat(document.getElementById('adminPercentage').value),
+                utilityPercentage: parseFloat(document.getElementById('utilityPercentage').value),
+                contingencyPercentage: parseFloat(document.getElementById('contingencyPercentage').value),
+                totalDirectCost: totalDirectCost,
+                totalWithIVA: totalWithIVA,
+                estimatedDuration: parseInt(document.getElementById('estimatedDuration').value) || 90,
+                manpowerRequired: parseInt(document.getElementById('manpowerRequired').value) || 8,
+                lastUpdated: new Date().toISOString()
+            };
+            
+            // Guardar en base de datos
+            if (currentBudget && currentBudget.id) {
+                budgetData.id = currentBudget.id;
+            }
+            
+            localDB.save('ms_budgets', budgetData);
+            currentBudget = budgetData;
+            
+            alert('Presupuesto guardado exitosamente');
+        }
+        
+        // Exportar presupuesto a CSV
+        function exportBudget() {
+            if (!currentBudget) {
+                alert('No hay presupuesto para exportar');
+                return;
+            }
+            
+            const project = localDB.findById('ms_projects', currentProjectId);
+            const filename = `presupuesto_${project.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+            
+            // Crear datos para exportación
+            const exportData = [];
+            
+            // Encabezado
+            exportData.push(['PROYECTO:', project.name]);
+            exportData.push(['CLIENTE:', project.clientName]);
+            exportData.push(['UBICACIÓN:', project.location]);
+            exportData.push(['TIPOLOGÍA:', currentBudget.typology.toUpperCase()]);
+            exportData.push(['TIPO DE CUBIERTA:', document.getElementById('slabTypeSelect').selectedOptions[0].text]);
+            exportData.push(['FECHA:', new Date().toLocaleDateString('es-GT')]);
+            exportData.push([]);
+            
+            // Encabezados de tabla
+            exportData.push(['No.', 'DESCRIPCIÓN', 'CANTIDAD', 'UNIDAD', 'COSTO UNITARIO (Q)', 'TOTAL (Q)']);
+            
+            // Renglones
+            currentBudget.items.forEach((item, index) => {
+                exportData.push([
+                    index + 1,
+                    item.name,
+                    item.quantity,
+                    item.unit,
+                    item.unitCost.toFixed(2),
+                    item.total.toFixed(2)
+                ]);
+            });
+            
+            exportData.push([]);
+            exportData.push(['RESUMEN DE COSTOS', '', '', '', '', '']);
+            exportData.push(['Costo Directo Total:', '', '', '', `Q ${currentBudget.totalDirectCost.toFixed(2)}`]);
+            exportData.push(['Costos Indirectos (AUI):', '', '', '', `Q ${(currentBudget.totalDirectCost * ((currentBudget.adminPercentage + currentBudget.utilityPercentage + currentBudget.contingencyPercentage) / 100)).toFixed(2)}`]);
+            exportData.push(['Subtotal (Sin IVA):', '', '', '', `Q ${(currentBudget.totalDirectCost * (1 + (currentBudget.adminPercentage + currentBudget.utilityPercentage + currentBudget.contingencyPercentage) / 100)).toFixed(2)}`]);
+            exportData.push(['IVA (12%):', '', '', '', `Q ${(currentBudget.totalWithIVA - (currentBudget.totalDirectCost * (1 + (currentBudget.adminPercentage + currentBudget.utilityPercentage + currentBudget.contingencyPercentage) / 100))).toFixed(2)}`]);
+            exportData.push(['TOTAL GENERAL (Con IVA):', '', '', '', `Q ${currentBudget.totalWithIVA.toFixed(2)}`]);
+            
+            // Convertir a CSV
+            let csvContent = '';
+            exportData.forEach(row => {
+                csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+            });
+            
+            // Descargar
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Imprimir reporte
+        function printBudget() {
+            if (!currentBudget) {
+                alert('No hay presupuesto para imprimir');
+                return;
+            }
+            
+            const project = localDB.findById('ms_projects', currentProjectId);
+            
+            let printContent = `
+                <html>
+                <head>
+                    <title>Presupuesto - ${project.name}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1e3a8a; padding-bottom: 20px; }
+                        .company-name { color: #1e3a8a; font-size: 24px; font-weight: bold; }
+                        .slogan { color: #d4af37; font-style: italic; }
+                        .project-info { margin: 20px 0; }
+                        .info-table { width: 100%; margin-bottom: 20px; }
+                        .info-table td { padding: 5px; }
+                        .budget-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        .budget-table th { background: #1e3a8a; color: white; padding: 10px; text-align: left; }
+                        .budget-table td { padding: 8px; border-bottom: 1px solid #ddd; }
+                        .summary { margin-top: 30px; padding: 20px; background: #f5f5f5; border-radius: 5px; }
+                        .summary-row { display: flex; justify-content: space-between; padding: 5px 0; }
+                        .total-row { font-weight: bold; font-size: 16px; border-top: 2px solid #333; padding-top: 10px; }
+                        .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+                        @media print {
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div class="company-name">CONSTRUCTORA WM/M&S</div>
+                        <div class="slogan">"EDIFICANDO EL FUTURO"</div>
+                        <h2>PRESUPUESTO DE CONSTRUCCIÓN</h2>
+                    </div>
+                    
+                    <div class="project-info">
+                        <table class="info-table">
+                            <tr>
+                                <td><strong>Proyecto:</strong></td>
+                                <td>${project.name}</td>
+                                <td><strong>Cliente:</strong></td>
+                                <td>${project.clientName}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ubicación:</strong></td>
+                                <td>${project.location}</td>
+                                <td><strong>Área:</strong></td>
+                                <td>${project.constructionArea || '0.00'} m²</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tipología:</strong></td>
+                                <td>${currentBudget.typology.toUpperCase()}</td>
+                                <td><strong>Tipo de Cubierta:</strong></td>
+                                <td>${document.getElementById('slabTypeSelect').selectedOptions[0].text}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fecha:</strong></td>
+                                <td>${new Date().toLocaleDateString('es-GT')}</td>
+                                <td><strong>Duración Estimada:</strong></td>
+                                <td>${currentBudget.estimatedDuration} días</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <table class="budget-table">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>DESCRIPCIÓN</th>
+                                <th>CANTIDAD</th>
+                                <th>UNIDAD</th>
+                                <th>COSTO UNITARIO (Q)</th>
+                                <th>TOTAL (Q)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            // Agregar renglones
+            currentBudget.items.forEach((item, index) => {
+                printContent += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${item.name}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.unit}</td>
+                        <td>${item.unitCost.toFixed(2)}</td>
+                        <td>${item.total.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            
+            printContent += `
+                        </tbody>
+                    </table>
+                    
+                    <div class="summary">
+                        <h3>Resumen de Costos</h3>
+                        <div class="summary-row">
+                            <span>Costo Directo Total:</span>
+                            <span>Q ${currentBudget.totalDirectCost.toFixed(2)}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Administración (${currentBudget.adminPercentage}%):</span>
+                            <span>Q ${(currentBudget.totalDirectCost * (currentBudget.adminPercentage / 100)).toFixed(2)}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Utilidad (${currentBudget.utilityPercentage}%):</span>
+                            <span>Q ${(currentBudget.totalDirectCost * (currentBudget.utilityPercentage / 100)).toFixed(2)}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Imprevistos (${currentBudget.contingencyPercentage}%):</span>
+                            <span>Q ${(currentBudget.totalDirectCost * (currentBudget.contingencyPercentage / 100)).toFixed(2)}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Subtotal (Sin IVA):</span>
+                            <span>Q ${(currentBudget.totalDirectCost * (1 + (currentBudget.adminPercentage + currentBudget.utilityPercentage + currentBudget.contingencyPercentage) / 100)).toFixed(2)}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>IVA (12%):</span>
+                            <span>Q ${(currentBudget.totalWithIVA - (currentBudget.totalDirectCost * (1 + (currentBudget.adminPercentage + currentBudget.utilityPercentage + currentBudget.contingencyPercentage) / 100))).toFixed(2)}</span>
+                        </div>
+                        <div class="summary-row total-row">
+                            <span>TOTAL GENERAL (Con IVA):</span>
+                            <span>Q ${currentBudget.totalWithIVA.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="footer">
+                        <p>Presupuesto generado por Sistema M&S Constructor v2.0</p>
+                        <p>CONSTRUCTORA WM/M&S - "EDIFICANDO EL FUTURO"</p>
+                        <p>Barrio el Centro Casco Urbano Quesada Jutiapa | Tel: 55606172</p>
+                    </div>
+                    
+                    <div class="no-print" style="margin-top: 20px; text-align: center;">
+                        <button onclick="window.print()" style="padding: 10px 20px; background: #1e3a8a; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            Imprimir Presupuesto
+                        </button>
+                        <button onclick="window.close()" style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
+                            Cerrar
+                        </button>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            // Abrir ventana de impresión
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+        }
+        
+        // Cambiar tipología
+        function changeTypology(typology) {
+            // Actualizar botones
+            document.querySelectorAll('.typology-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Actualizar tipología en el selector
+            document.getElementById('typologySelect').value = typology;
+            
+            // Mostrar renglones de la nueva tipología
+            if (workItemsByTypology[typology] && workItemsByTypology[typology].length > 0) {
+                showWorkItems(typology);
+            } else {
+                // Cargar renglones para esta tipología
+                const workItems = WORK_ITEMS_DATA[typology] || [];
+                workItemsByTypology[typology] = [...workItems];
+                showWorkItems(typology);
+            }
+        }
+        
+        // Agregar renglón personalizado
+        function addCustomItem() {
+            const name = prompt('Nombre del renglón personalizado:');
+            if (!name) return;
+            
+            const unit = prompt('Unidad de medida (m2, m3, ml, unidad, etc.):');
+            if (!unit) return;
+            
+            const unitCost = parseFloat(prompt('Costo unitario (Q):'));
+            if (isNaN(unitCost)) return;
+            
+            // Agregar a la lista actual
+            const currentTypology = document.getElementById('typologySelect').value;
+            if (!currentTypology) {
+                alert('Por favor seleccione una tipología primero');
+                return;
+            }
+            
+            const customItem = {
+                id: 'custom_' + Date.now(),
+                name: name,
+                unit: unit,
+                unitCost: unitCost,
+                category: 'personalizado'
+            };
+            
+            workItemsByTypology[currentTypology].push(customItem);
+            
+            // Mostrar lista actualizada
+            showWorkItems(currentTypology);
+            
+            alert('Renglón personalizado agregado exitosamente');
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 60000);
+            
+            // Cargar proyectos
+            loadProjects();
+            
+            // Event listeners
+            document.getElementById('loadBudgetBtn').addEventListener('click', loadBudget);
+            document.getElementById('generateWorkItemsBtn').addEventListener('click', generateWorkItems);
+            document.getElementById('calculateAUIBtn').addEventListener('click', calculateAUI);
+            document.getElementById('saveBudgetBtn').addEventListener('click', saveBudget);
+            document.getElementById('updateCalculationsBtn').addEventListener('click', calculateTotals);
+            document.getElementById('exportBudgetBtn').addEventListener('click', exportBudget);
+            document.getElementById('printBudgetBtn').addEventListener('click', printBudget);
+            document.getElementById('addCustomItemBtn').addEventListener('click', addCustomItem);
+            document.getElementById('syncBudgetBtn').addEventListener('click', function() {
+                alert('Sincronización con la nube configurada para la versión completa');
+            });
+            
+            // Cambiar tipología
+            document.querySelectorAll('.typology-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    changeTypology(this.dataset.typology);
+                });
+            });
+            
+            // Cerrar sesión
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                if (confirm('¿Está seguro de que desea salir del sistema?')) {
+                    window.location.href = 'index.html';
+                }
+            });
+            
+            // Cambios en porcentajes de AUI
+            document.getElementById('adminPercentage').addEventListener('change', calculateTotals);
+            document.getElementById('utilityPercentage').addEventListener('change', calculateTotals);
+            document.getElementById('contingencyPercentage').addEventListener('change', calculateTotals);
+            
+            // Cambios en factores de ajuste
+            document.getElementById('locationFactor').addEventListener('change', calculateTotals);
+            document.getElementById('accessDifficulty').addEventListener('change', calculateTotals);
+            document.getElementById('buildingHeight').addEventListener('change', calculateTotals);
+            document.getElementById('wasteFactor').addEventListener('change', calculateTotals);
+        });
+    </script>
+</body>
+</html>

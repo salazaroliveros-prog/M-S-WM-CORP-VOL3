@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&S Constructor - Seguimiento y Control</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gantt-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .gantt-scale {
+            display: flex;
+            background: var(--gray-light);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        
+        .gantt-scale-btn {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--gray-medium);
+            transition: all 0.3s;
+        }
+        
+        .gantt-scale-btn.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+        
+        .progress-container {
+            margin: 1rem 0;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--gray-dark);
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background: var(--gray-light);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--success), #2ecc71);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-fill.warning {
+            background: linear-gradient(to right, var(--warning), #f39c12);
+        }
+        
+        .progress-fill.danger {
+            background: linear-gradient(to right, var(--danger), #e74c3c);
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .comparison-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+        }
+        
+        .comparison-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .comparison-title {
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+        
+        .comparison-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .comparison-value.positive {
+            color: var(--success);
+        }
+        
+        .comparison-value.negative {
+            color: var(--danger);
+        }
+        
+        .alert-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        
+        .alert-badge.warning {
+            background: rgba(255, 193, 7, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+        
+        .alert-badge.danger {
+            background: rgba(220, 53, 69, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin-top: 1.5rem;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--gray-light);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            left: -25px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            border: 2px solid white;
+            box-shadow: 0 0 0 3px var(--primary-blue);
+        }
+        
+        .timeline-dot.completed {
+            background: var(--success);
+            box-shadow: 0 0 0 3px var(--success);
+        }
+        
+        .timeline-dot.delayed {
+            background: var(--danger);
+            box-shadow: 0 0 0 3px var(--danger);
+        }
+        
+        .timeline-dot.in-progress {
+            background: var(--warning);
+            box-shadow: 0 0 0 3px var(--warning);
+        }
+        
+        .timeline-content {
+            background: white;
+            padding: 1rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .timeline-date {
+            font-size: 0.85rem;
+            color: var(--gray-medium);
+            margin-bottom: 0.5rem;
+        }
+        
+        .timeline-title {
+            font-weight: 600;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+        
+        .critical-path {
+            background: rgba(220, 53, 69, 0.1);
+            border-left: 4px solid var(--danger);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-top: 1rem;
+        }
+        
+        .slack-time {
+            background: rgba(40, 167, 69, 0.1);
+            border-left: 4px solid var(--success);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div>
+                    <div class="logo-small">CONSTRUCTORA WM/M&S</div>
+                    <div class="slogan-small">EDIFICANDO EL FUTURO</div>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="datetime" id="currentDateTime"></div>
+                <button class="btn btn-danger btn-small" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Filtros principales -->
+            <div class="filters-container">
+                <h2 class="section-title">Seguimiento y Control de Proyectos</h2>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="projectFilter">Proyecto *</label>
+                        <select id="projectFilter">
+                            <option value="">-- Seleccione un proyecto --</option>
+                            <option value="all">Todos los proyectos activos</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="dateRange">Rango de Fechas</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="date" id="startDate" style="flex: 1;">
+                            <span style="align-self: center;">a</span>
+                            <input type="date" id="endDate" style="flex: 1;">
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label for="viewType">Tipo de Vista</label>
+                        <select id="viewType">
+                            <option value="overview">Vista General</option>
+                            <option value="physical">Avance Físico</option>
+                            <option value="financial">Avance Financiero</option>
+                            <option value="comparison">Comparativo</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista General -->
+            <div class="form-section" id="overviewView">
+                <h2 class="section-title">Vista General de Proyectos</h2>
+                
+                <!-- Tarjetas de resumen -->
+                <div class="cards-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Proyectos Activos</div>
+                            <div class="card-value" id="activeProjectsCount">0</div>
+                        </div>
+                        <div class="card-footer">
+                            <span id="delayedProjects">0</span> con retraso
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Avance Físico Promedio</div>
+                            <div class="card-value" id="avgPhysicalProgress">0%</div>
+                        </div>
+                        <div class="card-footer">
+                            <span id="onScheduleProjects">0</span> en tiempo
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Avance Financiero Promedio</div>
+                            <div class="card-value" id="avgFinancialProgress">0%</div>
+                        </div>
+                        <div class="card-footer">
+                            <span id="onBudgetProjects">0</span> dentro de presupuesto
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Utilidad Estimada</div>
+                            <div class="card-value" id="estimatedProfit">Q 0.00</div>
+                        </div>
+                        <div class="card-footer">
+                            Margen: <span id="profitMargin">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico Gantt simplificado -->
+                <div class="chart-container mt-4">
+                    <div class="chart-title">Cronograma de Proyectos</div>
+                    <div class="gantt-controls">
+                        <div class="gantt-scale">
+                            <button class="gantt-scale-btn active" data-scale="month">Mensual</button>
+                            <button class="gantt-scale-btn" data-scale="quarter">Trimestral</button>
+                            <button class="gantt-scale-btn" data-scale="year">Anual</button>
+                        </div>
+                        <button class="btn btn-secondary btn-small" id="toggleCriticalPath">
+                            <i class="fas fa-road"></i> Mostrar Ruta Crítica
+                        </button>
+                    </div>
+                    <div class="gantt-container">
+                        <div class="gantt-chart" id="ganttChart">
+                            <!-- Gantt generado dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alertas y notificaciones -->
+                <div class="alert alert-warning mt-4" id="alertsContainer" style="display: none;">
+                    <div class="alert-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">Alertas Activas</div>
+                        <div class="alert-message" id="alertsList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista de Detalles del Proyecto -->
+            <div class="form-section hidden" id="projectDetailView">
+                <div class="project-detail-header">
+                    <h2 class="section-title" id="projectDetailTitle">Detalles del Proyecto</h2>
+                    <button class="btn btn-secondary btn-small" id="backToOverview">
+                        <i class="fas fa-arrow-left"></i> Volver a Vista General
+                    </button>
+                </div>
+
+                <!-- Información del proyecto -->
+                <div class="cards-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Información del Proyecto</div>
+                        </div>
+                        <div class="card-body" id="projectBasicInfo">
+                            <!-- Cargado dinámicamente -->
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Avance Físico</div>
+                            <div class="card-value" id="projectPhysicalProgress">0%</div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>Completado</span>
+                                <span id="physicalProgressText">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="physicalProgressBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Avance Financiero</div>
+                            <div class="card-value" id="projectFinancialProgress">0%</div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>Ejecutado</span>
+                                <span id="financialProgressText">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="financialProgressBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparativo Físico vs Financiero -->
+                <div class="comparison-grid">
+                    <div class="comparison-card">
+                        <div class="comparison-header">
+                            <div class="comparison-title">Planificado vs Real (Físico)</div>
+                            <div class="comparison-value" id="physicalVariance">0%</div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>Planificado: <span id="plannedPhysical">0%</span></span>
+                                <span>Real: <span id="actualPhysical">0%</span></span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="plannedPhysicalBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="comparison-card">
+                        <div class="comparison-header">
+                            <div class="comparison-title">Planificado vs Real (Financiero)</div>
+                            <div class="comparison-value" id="financialVariance">0%</div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>Planificado: Q <span id="plannedFinancial">0.00</span></span>
+                                <span>Real: Q <span id="actualFinancial">0.00</span></span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="plannedFinancialBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline de hitos -->
+                <div class="chart-container mt-4">
+                    <div class="chart-title">Hitos del Proyecto</div>
+                    <div class="timeline" id="projectTimeline">
+                        <!-- Timeline generado dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Tabla de renglones -->
+                <div class="table-container mt-4">
+                    <div class="table-responsive">
+                        <table class="data-table" id="projectItemsTable">
+                            <thead>
+                                <tr>
+                                    <th>Renglón</th>
+                                    <th>Descripción</th>
+                                    <th>Avance Físico</th>
+                                    <th>Avance Financiero</th>
+                                    <th>Planificado</th>
+                                    <th>Real</th>
+                                    <th>Varianza</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Cargado dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Análisis de varianzas -->
+                <div class="chart-container mt-4">
+                    <div class="chart-title">Análisis de Varianzas</div>
+                    <div id="varianceAnalysis">
+                        <!-- Análisis generado dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="navigation">
+                <a href="inicio.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="nav-title">INICIO</div>
+                    <div class="nav-desc">Registro de ingresos/gastos</div>
+                </a>
+
+                <a href="proyectos.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="nav-title">PROYECTOS</div>
+                    <div class="nav-desc">Gestión de proyectos</div>
+                </a>
+
+                <a href="presupuestos.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <div class="nav-title">PRESUPUESTOS</div>
+                    <div class="nav-desc">Cuantificación y costos</div>
+                </a>
+
+                <a href="dashboard.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="nav-title">DASHBOARD</div>
+                    <div class="nav-desc">Tablero principal</div>
+                </a>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <button class="btn btn-secondary btn-small" id="exportReportBtn">
+                        <i class="fas fa-file-export"></i> Exportar Reporte
+                    </button>
+                    <button class="btn btn-primary btn-small" id="syncDataBtn">
+                        <i class="fas fa-sync-alt"></i> Sincronizar
+                    </button>
+                    <button class="btn btn-success btn-small" id="printReportBtn">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                </div>
+                <div class="copyright">
+                    © 2024 CONSTRUCTORA WM/M&S - "EDIFICANDO EL FUTURO"
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/database.js"></script>
+    <script>
+        // Variables globales
+        let selectedProjectId = null;
+        let projectsData = [];
+        let budgetsData = [];
+        let transactionsData = [];
+        
+        // Actualizar fecha y hora
+        function updateDateTime() {
+            const now = new Date();
+            const dateTimeStr = now.toLocaleDateString('es-GT', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('currentDateTime').textContent = dateTimeStr;
+            
+            // Establecer fechas por defecto (últimos 30 días)
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 30);
+            
+            document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+            document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+        }
+        
+        // Cargar datos iniciales
+        function loadInitialData() {
+            projectsData = localDB.findAll('ms_projects');
+            budgetsData = localDB.findAll('ms_budgets');
+            transactionsData = localDB.findAll('ms_transactions');
+            
+            // Cargar proyectos en el filtro
+            loadProjectFilter();
+            
+            // Calcular métricas iniciales
+            calculateOverviewMetrics();
+            
+            // Generar gráfico Gantt inicial
+            generateGanttChart();
+        }
+        
+        // Cargar filtro de proyectos
+        function loadProjectFilter() {
+            const projectFilter = document.getElementById('projectFilter');
+            
+            // Limpiar opciones excepto las dos primeras
+            while (projectFilter.options.length > 2) {
+                projectFilter.remove(2);
+            }
+            
+            // Agregar proyectos activos
+            projectsData.forEach(project => {
+                if (project.status === 'active') {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = `${project.name} - ${project.clientName}`;
+                    projectFilter.appendChild(option);
+                }
+            });
+        }
+        
+        // Calcular métricas de vista general
+        function calculateOverviewMetrics() {
+            const activeProjects = projectsData.filter(p => p.status === 'active');
+            const activeCount = activeProjects.length;
+            
+            // Calcular avances
+            let totalPhysicalProgress = 0;
+            let totalFinancialProgress = 0;
+            let delayedProjects = 0;
+            let onScheduleProjects = 0;
+            let onBudgetProjects = 0;
+            let totalEstimatedProfit = 0;
+            
+            activeProjects.forEach(project => {
+                const projectMetrics = calculateProjectMetrics(project.id);
+                
+                totalPhysicalProgress += projectMetrics.physicalProgress;
+                totalFinancialProgress += projectMetrics.financialProgress;
+                
+                if (projectMetrics.isDelayed) delayedProjects++;
+                if (projectMetrics.isOnSchedule) onScheduleProjects++;
+                if (projectMetrics.isOnBudget) onBudgetProjects++;
+                
+                totalEstimatedProfit += projectMetrics.estimatedProfit || 0;
+            });
+            
+            // Actualizar interfaz
+            document.getElementById('activeProjectsCount').textContent = activeCount;
+            document.getElementById('delayedProjects').textContent = delayedProjects;
+            document.getElementById('onScheduleProjects').textContent = onScheduleProjects;
+            document.getElementById('onBudgetProjects').textContent = onBudgetProjects;
+            
+            const avgPhysical = activeCount > 0 ? (totalPhysicalProgress / activeCount) : 0;
+            const avgFinancial = activeCount > 0 ? (totalFinancialProgress / activeCount) : 0;
+            
+            document.getElementById('avgPhysicalProgress').textContent = `${avgPhysical.toFixed(1)}%`;
+            document.getElementById('avgFinancialProgress').textContent = `${avgFinancial.toFixed(1)}%`;
+            document.getElementById('estimatedProfit').textContent = `Q ${totalEstimatedProfit.toFixed(2)}`;
+            
+            // Calcular margen de utilidad promedio
+            const totalBudget = budgetsData.reduce((sum, budget) => sum + (budget.totalWithIVA || 0), 0);
+            const profitMargin = totalBudget > 0 ? (totalEstimatedProfit / totalBudget) * 100 : 0;
+            document.getElementById('profitMargin').textContent = `${profitMargin.toFixed(1)}%`;
+            
+            // Generar alertas
+            generateAlerts();
+        }
+        
+        // Calcular métricas de un proyecto específico
+        function calculateProjectMetrics(projectId) {
+            const project = projectsData.find(p => p.id === projectId);
+            const budget = budgetsData.find(b => b.projectId === projectId);
+            const projectTransactions = transactionsData.filter(t => t.projectId === projectId);
+            
+            // Calcular avance físico (simulado - en producción se calcularía basado en hitos)
+            const physicalProgress = Math.min(Math.random() * 100, 100);
+            
+            // Calcular avance financiero
+            const totalBudget = budget?.totalWithIVA || 0;
+            const spentAmount = projectTransactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + (t.cost || 0), 0);
+            
+            const financialProgress = totalBudget > 0 ? (spentAmount / totalBudget) * 100 : 0;
+            
+            // Verificar retrasos (simulado)
+            const currentDate = new Date();
+            const startDate = project?.startDate ? new Date(project.startDate) : currentDate;
+            const estimatedEndDate = project?.estimatedEndDate ? new Date(project.estimatedEndDate) : currentDate;
+            
+            const totalDays = (estimatedEndDate - startDate) / (1000 * 60 * 60 * 24);
+            const elapsedDays = (currentDate - startDate) / (1000 * 60 * 60 * 24);
+            
+            const expectedProgress = elapsedDays / totalDays * 100;
+            const isDelayed = physicalProgress < expectedProgress - 10; // 10% de tolerancia
+            const isOnSchedule = Math.abs(physicalProgress - expectedProgress) <= 10;
+            
+            // Verificar presupuesto
+            const isOnBudget = financialProgress <= physicalProgress + 5; // 5% de tolerancia
+            
+            // Calcular utilidad estimada
+            const incomeAmount = projectTransactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + (t.cost || 0), 0);
+            
+            const estimatedProfit = incomeAmount - spentAmount;
+            
+            return {
+                physicalProgress,
+                financialProgress,
+                spentAmount,
+                incomeAmount,
+                estimatedProfit,
+                isDelayed,
+                isOnSchedule,
+                isOnBudget,
+                expectedProgress,
+                totalBudget
+            };
+        }
+        
+        // Generar alertas
+        function generateAlerts() {
+            const alerts = [];
+            
+            projectsData.forEach(project => {
+                if (project.status === 'active') {
+                    const metrics = calculateProjectMetrics(project.id);
+                    
+                    if (metrics.isDelayed) {
+                        alerts.push({
+                            type: 'warning',
+                            message: `${project.name} presenta retraso en el avance físico`,
+                            projectId: project.id
+                        });
+                    }
+                    
+                    if (!metrics.isOnBudget) {
+                        alerts.push({
+                            type: 'danger',
+                            message: `${project.name} presenta desviación en el presupuesto`,
+                            projectId: project.id
+                        });
+                    }
+                    
+                    // Alertas de fechas críticas
+                    if (project.estimatedEndDate) {
+                        const endDate = new Date(project.estimatedEndDate);
+                        const today = new Date();
+                        const daysRemaining = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+                        
+                        if (daysRemaining <= 30 && daysRemaining > 0) {
+                            alerts.push({
+                                type: 'warning',
+                                message: `${project.name} finaliza en ${daysRemaining} días`,
+                                projectId: project.id
+                            });
+                        } else if (daysRemaining <= 0) {
+                            alerts.push({
+                                type: 'danger',
+                                message: `${project.name} ha excedido la fecha de finalización`,
+                                projectId: project.id
+                            });
+                        }
+                    }
+                }
+            });
+            
+            // Mostrar alertas si existen
+            if (alerts.length > 0) {
+                document.getElementById('alertsContainer').style.display = 'flex';
+                const alertsList = document.getElementById('alertsList');
+                alertsList.innerHTML = '';
+                
+                alerts.forEach(alert => {
+                    const alertElement = document.createElement('div');
+                    alertElement.style.marginBottom = '0.5rem';
+                    alertElement.innerHTML = `
+                        <i class="fas fa-exclamation-circle" style="color: ${alert.type === 'danger' ? '#dc3545' : '#ffc107'}"></i>
+                        ${alert.message}
+                        <button class="btn btn-small btn-secondary" onclick="viewProjectDetail('${alert.projectId}')" style="margin-left: 0.5rem;">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
+                    `;
+                    alertsList.appendChild(alertElement);
+                });
+            } else {
+                document.getElementById('alertsContainer').style.display = 'none';
+            }
+        }
+        
+        // Generar gráfico Gantt
+        function generateGanttChart() {
+            const ganttChart = document.getElementById('ganttChart');
+            const activeProjects = projectsData.filter(p => p.status === 'active');
+            
+            if (activeProjects.length === 0) {
+                ganttChart.innerHTML = '<div class="chart-placeholder">No hay proyectos activos para mostrar</div>';
+                return;
+            }
+            
+            // Crear estructura del Gantt
+            let ganttHTML = `
+                <div class="gantt-header">
+                    <div class="gantt-header-cell" style="min-width: 250px;">Proyecto</div>
+            `;
+            
+            // Generar meses (6 meses a partir de hoy)
+            const months = [];
+            const today = new Date();
+            for (let i = -1; i < 5; i++) {
+                const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+                months.push(date.toLocaleDateString('es-GT', { month: 'short', year: '2-digit' }));
+            }
+            
+            months.forEach(month => {
+                ganttHTML += `<div class="gantt-header-cell">${month}</div>`;
+            });
+            
+            ganttHTML += `</div>`;
+            
+            // Agregar filas de proyectos
+            activeProjects.forEach(project => {
+                const startDate = project.startDate ? new Date(project.startDate) : new Date();
+                const endDate = project.estimatedEndDate ? new Date(project.estimatedEndDate) : new Date();
+                
+                // Calcular posición y duración
+                const projectStartMonth = startDate.getMonth() + startDate.getFullYear() * 12;
+                const projectEndMonth = endDate.getMonth() + endDate.getFullYear() * 12;
+                const todayMonth = today.getMonth() + today.getFullYear() * 12;
+                
+                const durationMonths = Math.max(1, projectEndMonth - projectStartMonth + 1);
+                const offsetMonths = projectStartMonth - (todayMonth - 1); // -1 para mostrar mes anterior
+                
+                ganttHTML += `
+                    <div class="gantt-row">
+                        <div class="gantt-task-cell">
+                            ${project.name}
+                            <div style="font-size: 0.8rem; color: #666;">${project.clientName}</div>
+                        </div>
+                        <div class="gantt-bar-cell">
+                            <div class="gantt-bar" style="
+                                margin-left: ${Math.max(0, offsetMonths * 100)}px;
+                                width: ${durationMonths * 100}px;
+                            ">
+                                ${Math.round(calculateProjectMetrics(project.id).physicalProgress)}%
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            ganttChart.innerHTML = ganttHTML;
+        }
+        
+        // Ver detalles del proyecto
+        function viewProjectDetail(projectId) {
+            selectedProjectId = projectId;
+            const project = projectsData.find(p => p.id === projectId);
+            
+            if (!project) {
+                alert('Proyecto no encontrado');
+                return;
+            }
+            
+            // Cambiar a vista de detalles
+            document.getElementById('overviewView').classList.add('hidden');
+            document.getElementById('projectDetailView').classList.remove('hidden');
+            
+            // Actualizar título
+            document.getElementById('projectDetailTitle').textContent = `Seguimiento - ${project.name}`;
+            
+            // Cargar información básica
+            document.getElementById('projectBasicInfo').innerHTML = `
+                <p><strong>Cliente:</strong> ${project.clientName}</p>
+                <p><strong>Ubicación:</strong> ${project.location}</p>
+                <p><strong>Área:</strong> ${project.constructionArea || '0.00'} m²</p>
+                <p><strong>Fecha inicio:</strong> ${project.startDate ? formatDate(project.startDate) : 'No definida'}</p>
+                <p><strong>Fecha estimada fin:</strong> ${project.estimatedEndDate ? formatDate(project.estimatedEndDate) : 'No definida'}</p>
+            `;
+            
+            // Calcular y mostrar métricas
+            const metrics = calculateProjectMetrics(projectId);
+            
+            document.getElementById('projectPhysicalProgress').textContent = `${metrics.physicalProgress.toFixed(1)}%`;
+            document.getElementById('physicalProgressText').textContent = `${metrics.physicalProgress.toFixed(1)}%`;
+            document.getElementById('physicalProgressBar').style.width = `${metrics.physicalProgress}%`;
+            
+            document.getElementById('projectFinancialProgress').textContent = `${metrics.financialProgress.toFixed(1)}%`;
+            document.getElementById('financialProgressText').textContent = `${metrics.financialProgress.toFixed(1)}%`;
+            document.getElementById('financialProgressBar').style.width = `${metrics.financialProgress}%`;
+            
+            // Actualizar clase de progreso según estado
+            const physicalBar = document.getElementById('physicalProgressBar');
+            physicalBar.className = 'progress-fill';
+            if (metrics.physicalProgress < 50) {
+                physicalBar.classList.add('danger');
+            } else if (metrics.physicalProgress < 80) {
+                physicalBar.classList.add('warning');
+            }
+            
+            const financialBar = document.getElementById('financialProgressBar');
+            financialBar.className = 'progress-fill';
+            if (metrics.financialProgress > metrics.physicalProgress + 10) {
+                financialBar.classList.add('danger');
+            } else if (metrics.financialProgress > metrics.physicalProgress + 5) {
+                financialBar.classList.add('warning');
+            }
+            
+            // Calcular varianzas
+            const physicalVariance = metrics.physicalProgress - metrics.expectedProgress;
+            const financialVariance = metrics.spentAmount - (metrics.totalBudget * (metrics.physicalProgress / 100));
+            
+            document.getElementById('physicalVariance').textContent = `${physicalVariance.toFixed(1)}%`;
+            document.getElementById('physicalVariance').className = `comparison-value ${physicalVariance >= 0 ? 'positive' : 'negative'}`;
+            
+            document.getElementById('financialVariance').textContent = `Q ${financialVariance.toFixed(2)}`;
+            document.getElementById('financialVariance').className = `comparison-value ${financialVariance <= 0 ? 'positive' : 'negative'}`;
+            
+            // Actualizar valores planificados vs reales
+            document.getElementById('plannedPhysical').textContent = `${metrics.expectedProgress.toFixed(1)}%`;
+            document.getElementById('actualPhysical').textContent = `${metrics.physicalProgress.toFixed(1)}%`;
+            document.getElementById('plannedPhysicalBar').style.width = `${Math.min(100, metrics.expectedProgress)}%`;
+            
+            document.getElementById('plannedFinancial').textContent = `${(metrics.totalBudget * (metrics.physicalProgress / 100)).toFixed(2)}`;
+            document.getElementById('actualFinancial').textContent = `${metrics.spentAmount.toFixed(2)}`;
+            document.getElementById('plannedFinancialBar').style.width = `${Math.min(100, (metrics.spentAmount / metrics.totalBudget) * 100)}%`;
+            
+            // Generar timeline
+            generateProjectTimeline(projectId);
+            
+            // Generar tabla de renglones
+            generateProjectItemsTable(projectId);
+            
+            // Generar análisis de varianzas
+            generateVarianceAnalysis(projectId, metrics);
+        }
+        
+        // Generar timeline del proyecto
+        function generateProjectTimeline(projectId) {
+            const timeline = document.getElementById('projectTimeline');
+            const project = projectsData.find(p => p.id === projectId);
+            
+            // Hitos simulados (en producción vendrían de una base de datos)
+            const milestones = [
+                {
+                    date: project.startDate || new Date().toISOString(),
+                    title: 'Inicio del proyecto',
+                    description: 'Inicio de obras según contrato',
+                    status: 'completed'
+                },
+                {
+                    date: new Date(new Date(project.startDate || new Date()).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    title: 'Cimentación completada',
+                    description: 'Trabajos de cimentación al 100%',
+                    status: 'in-progress'
+                },
+                {
+                    date: new Date(new Date(project.startDate || new Date()).getTime() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+                    title: 'Estructura completada',
+                    description: 'Estructura principal terminada',
+                    status: 'pending'
+                },
+                {
+                    date: project.estimatedEndDate || new Date(new Date().getTime() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+                    title: 'Finalización del proyecto',
+                    description: 'Entrega al cliente',
+                    status: 'pending'
+                }
+            ];
+            
+            timeline.innerHTML = '';
+            
+            milestones.forEach(milestone => {
+                const milestoneDate = new Date(milestone.date);
+                const today = new Date();
+                let status = milestone.status;
+                
+                // Ajustar estado según fecha
+                if (milestoneDate < today && milestone.status === 'pending') {
+                    status = 'delayed';
+                } else if (milestoneDate < today && milestone.status !== 'completed') {
+                    status = 'in-progress';
+                }
+                
+                const timelineItem = document.createElement('div');
+                timelineItem.className = 'timeline-item';
+                
+                timelineItem.innerHTML = `
+                    <div class="timeline-dot ${status}"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">${formatDate(milestone.date)}</div>
+                        <div class="timeline-title">${milestone.title}</div>
+                        <div>${milestone.description}</div>
+                        ${status === 'delayed' ? '<span class="alert-badge danger">Retrasado</span>' : ''}
+                        ${status === 'in-progress' ? '<span class="alert-badge warning">En progreso</span>' : ''}
+                    </div>
+                `;
+                
+                timeline.appendChild(timelineItem);
+            });
+        }
+        
+        // Generar tabla de renglones del proyecto
+        function generateProjectItemsTable(projectId) {
+            const budget = budgetsData.find(b => b.projectId === projectId);
+            const tableBody = document.querySelector('#projectItemsTable tbody');
+            
+            tableBody.innerHTML = '';
+            
+            if (!budget || !budget.items || budget.items.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="8" class="text-center">No hay renglones definidos para este proyecto</td>`;
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            budget.items.forEach((item, index) => {
+                // Simular progreso y costos (en producción vendrían de seguimiento real)
+                const physicalProgress = Math.min(100, Math.random() * 100);
+                const plannedCost = item.total || (item.quantity * item.unitCost);
+                const actualCost = plannedCost * (physicalProgress / 100) * (0.8 + Math.random() * 0.4); // +/- 20%
+                const variance = actualCost - (plannedCost * (physicalProgress / 100));
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.name}</td>
+                    <td>
+                        <div class="progress-bar" style="height: 10px;">
+                            <div class="progress-fill" style="width: ${physicalProgress}%"></div>
+                        </div>
+                        <small>${physicalProgress.toFixed(1)}%</small>
+                    </td>
+                    <td>
+                        <div class="progress-bar" style="height: 10px;">
+                            <div class="progress-fill" style="width: ${(actualCost / plannedCost) * 100}%"></div>
+                        </div>
+                        <small>${((actualCost / plannedCost) * 100).toFixed(1)}%</small>
+                    </td>
+                    <td>Q ${plannedCost.toFixed(2)}</td>
+                    <td>Q ${actualCost.toFixed(2)}</td>
+                    <td class="${variance <= 0 ? 'text-success' : 'text-danger'}">
+                        Q ${variance.toFixed(2)}
+                    </td>
+                    <td>
+                        ${physicalProgress >= 100 ? '<span class="text-success">Completado</span>' : 
+                          physicalProgress >= 70 ? '<span class="text-warning">En progreso</span>' : 
+                          '<span class="text-info">Pendiente</span>'}
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Generar análisis de varianzas
+        function generateVarianceAnalysis(projectId, metrics) {
+            const analysisDiv = document.getElementById('varianceAnalysis');
+            
+            let analysisHTML = '';
+            
+            if (metrics.physicalProgress < metrics.expectedProgress - 5) {
+                analysisHTML += `
+                    <div class="alert alert-danger">
+                        <div class="alert-title">Retraso en avance físico</div>
+                        <div class="alert-message">
+                            El proyecto tiene un retraso del ${(metrics.expectedProgress - metrics.physicalProgress).toFixed(1)}% 
+                            en el avance físico. Se recomienda revisar los recursos asignados y la productividad de la mano de obra.
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (metrics.financialProgress > metrics.physicalProgress + 5) {
+                analysisHTML += `
+                    <div class="alert alert-warning">
+                        <div class="alert-title">Desviación en costos</div>
+                        <div class="alert-message">
+                            El gasto ejecutado (${metrics.financialProgress.toFixed(1)}%) excede el avance físico 
+                            (${metrics.physicalProgress.toFixed(1)}%). Esto puede indicar sobrecostos o compras anticipadas.
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (metrics.estimatedProfit < 0) {
+                analysisHTML += `
+                    <div class="alert alert-danger">
+                        <div class="alert-title">Pérdidas proyectadas</div>
+                        <div class="alert-message">
+                            El proyecto presenta pérdidas estimadas de Q ${Math.abs(metrics.estimatedProfit).toFixed(2)}. 
+                            Se requiere revisión inmediata de costos y posible renegociación con el cliente.
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (analysisHTML === '') {
+                analysisHTML = `
+                    <div class="alert alert-success">
+                        <div class="alert-title">Proyecto en buen estado</div>
+                        <div class="alert-message">
+                            El proyecto se encuentra dentro de los parámetros planificados tanto en avance físico como financiero.
+                            La utilidad estimada es de Q ${metrics.estimatedProfit.toFixed(2)}.
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Agregar recomendaciones
+            analysisHTML += `
+                <div class="mt-3">
+                    <h4>Recomendaciones:</h4>
+                    <ul>
+                        <li>Realizar seguimiento semanal de avances físicos</li>
+                        <li>Verificar el stock de materiales críticos</li>
+                        <li>Actualizar el presupuesto con costos reales</li>
+                        <li>Programar reuniones de coordinación con el equipo</li>
+                    </ul>
+                </div>
+            `;
+            
+            analysisDiv.innerHTML = analysisHTML;
+        }
+        
+        // Formatear fecha
+        function formatDate(dateString) {
+            if (!dateString) return 'No definida';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-GT', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        // Exportar reporte
+        function exportReport() {
+            if (!selectedProjectId) {
+                alert('Por favor seleccione un proyecto primero');
+                return;
+            }
+            
+            const project = projectsData.find(p => p.id === selectedProjectId);
+            const filename = `seguimiento_${project.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+            
+            // Crear datos para exportación
+            const exportData = [];
+            
+            exportData.push(['REPORTE DE SEGUIMIENTO - CONSTRUCTORA WM/M&S']);
+            exportData.push(['Proyecto:', project.name]);
+            exportData.push(['Cliente:', project.clientName]);
+            exportData.push(['Fecha de generación:', new Date().toLocaleDateString('es-GT')]);
+            exportData.push([]);
+            
+            // Agregar métricas
+            const metrics = calculateProjectMetrics(selectedProjectId);
+            exportData.push(['MÉTRICAS DEL PROYECTO', '', '', '']);
+            exportData.push(['Avance físico:', `${metrics.physicalProgress.toFixed(1)}%`]);
+            exportData.push(['Avance financiero:', `${metrics.financialProgress.toFixed(1)}%`]);
+            exportData.push(['Gasto ejecutado:', `Q ${metrics.spentAmount.toFixed(2)}`]);
+            exportData.push(['Ingresos recibidos:', `Q ${metrics.incomeAmount.toFixed(2)}`]);
+            exportData.push(['Utilidad estimada:', `Q ${metrics.estimatedProfit.toFixed(2)}`]);
+            exportData.push(['Estado:', metrics.isDelayed ? 'Con retraso' : 'En tiempo']);
+            exportData.push([]);
+            
+            // Convertir a CSV
+            let csvContent = '';
+            exportData.forEach(row => {
+                csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+            });
+            
+            // Descargar
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert('Reporte exportado exitosamente');
+        }
+        
+        // Imprimir reporte
+        function printReport() {
+            if (!selectedProjectId) {
+                alert('Por favor seleccione un proyecto primero');
+                return;
+            }
+            
+            const project = projectsData.find(p => p.id === selectedProjectId);
+            const metrics = calculateProjectMetrics(selectedProjectId);
+            
+            let printContent = `
+                <html>
+                <head>
+                    <title>Reporte de Seguimiento - ${project.name}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1e3a8a; padding-bottom: 20px; }
+                        .company-name { color: #1e3a8a; font-size: 24px; font-weight: bold; }
+                        .slogan { color: #d4af37; font-style: italic; }
+                        .project-info { margin: 20px 0; }
+                        .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 20px 0; }
+                        .metric-card { background: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #1e3a8a; }
+                        .metric-value { font-size: 24px; font-weight: bold; color: #1e3a8a; }
+                        .progress-bar { height: 20px; background: #e9ecef; border-radius: 10px; overflow: hidden; margin: 10px 0; }
+                        .progress-fill { height: 100%; background: #28a745; border-radius: 10px; }
+                        .analysis { margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 5px; }
+                        .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+                        @media print {
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div class="company-name">CONSTRUCTORA WM/M&S</div>
+                        <div class="slogan">"EDIFICANDO EL FUTURO"</div>
+                        <h2>REPORTE DE SEGUIMIENTO DE PROYECTO</h2>
+                    </div>
+                    
+                    <div class="project-info">
+                        <h3>${project.name}</h3>
+                        <p><strong>Cliente:</strong> ${project.clientName}</p>
+                        <p><strong>Ubicación:</strong> ${project.location}</p>
+                        <p><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-GT')}</p>
+                    </div>
+                    
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div>Avance Físico</div>
+                            <div class="metric-value">${metrics.physicalProgress.toFixed(1)}%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${metrics.physicalProgress}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div>Avance Financiero</div>
+                            <div class="metric-value">${metrics.financialProgress.toFixed(1)}%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${metrics.financialProgress}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div>Gasto Ejecutado</div>
+                            <div class="metric-value">Q ${metrics.spentAmount.toFixed(2)}</div>
+                        </div>
+                        
+                        <div class="metric-card">
+                            <div>Utilidad Estimada</div>
+                            <div class="metric-value">Q ${metrics.estimatedProfit.toFixed(2)}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis">
+                        <h3>Análisis de Situación</h3>
+                        <p><strong>Estado del proyecto:</strong> ${metrics.isDelayed ? 'CON RETRASO' : 'EN TIEMPO'}</p>
+                        <p><strong>Control de presupuesto:</strong> ${metrics.isOnBudget ? 'DENTRO DEL PRESUPUESTO' : 'CON DESVIACIONES'}</p>
+                        
+                        <h4>Recomendaciones:</h4>
+                        <ul>
+                            <li>Realizar seguimiento diario de avances</li>
+                            <li>Controlar estrictamente las compras de materiales</li>
+                            <li>Optimizar la productividad de la mano de obra</li>
+                            <li>Mantener comunicación constante con el cliente</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer">
+                        <p>Reporte generado por Sistema M&S Constructor v2.0</p>
+                        <p>CONSTRUCTORA WM/M&S - "EDIFICANDO EL FUTURO"</p>
+                    </div>
+                    
+                    <div class="no-print" style="margin-top: 20px; text-align: center;">
+                        <button onclick="window.print()" style="padding: 10px 20px; background: #1e3a8a; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            Imprimir Reporte
+                        </button>
+                        <button onclick="window.close()" style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
+                            Cerrar
+                        </button>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+        }
+        
+        // Sincronizar datos
+        function syncData() {
+            document.getElementById('syncDataBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizando...';
+            
+            // Simular sincronización
+            setTimeout(() => {
+                // Recargar datos
+                projectsData = localDB.findAll('ms_projects');
+                budgetsData = localDB.findAll('ms_budgets');
+                transactionsData = localDB.findAll('ms_transactions');
+                
+                // Recalcular métricas
+                calculateOverviewMetrics();
+                
+                if (selectedProjectId) {
+                    viewProjectDetail(selectedProjectId);
+                } else {
+                    generateGanttChart();
+                }
+                
+                document.getElementById('syncDataBtn').innerHTML = '<i class="fas fa-sync-alt"></i> Sincronizar';
+                alert('Datos sincronizados exitosamente');
+            }, 1500);
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 60000);
+            
+            // Cargar datos iniciales
+            loadInitialData();
+            
+            // Event listeners
+            document.getElementById('projectFilter').addEventListener('change', function() {
+                const selectedValue = this.value;
+                
+                if (selectedValue && selectedValue !== 'all') {
+                    viewProjectDetail(selectedValue);
+                } else {
+                    // Volver a vista general
+                    document.getElementById('overviewView').classList.remove('hidden');
+                    document.getElementById('projectDetailView').classList.add('hidden');
+                    selectedProjectId = null;
+                }
+            });
+            
+            document.getElementById('viewType').addEventListener('change', function() {
+                // En una versión completa, cambiaría la vista
+                alert(`Vista cambiada a: ${this.options[this.selectedIndex].text}`);
+            });
+            
+            document.getElementById('backToOverview').addEventListener('click', function() {
+                document.getElementById('overviewView').classList.remove('hidden');
+                document.getElementById('projectDetailView').classList.add('hidden');
+                selectedProjectId = null;
+            });
+            
+            document.getElementById('exportReportBtn').addEventListener('click', exportReport);
+            document.getElementById('printReportBtn').addEventListener('click', printReport);
+            document.getElementById('syncDataBtn').addEventListener('click', syncData);
+            
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                if (confirm('¿Está seguro de que desea salir del sistema?')) {
+                    window.location.href = 'index.html';
+                }
+            });
+            
+            // Escala del Gantt
+            document.querySelectorAll('.gantt-scale-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.gantt-scale-btn').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    generateGanttChart();
+                });
+            });
+            
+            // Ruta crítica
+            document.getElementById('toggleCriticalPath').addEventListener('click', function() {
+                const isActive = this.classList.contains('active');
+                this.classList.toggle('active');
+                this.innerHTML = isActive ? 
+                    '<i class="fas fa-road"></i> Mostrar Ruta Crítica' : 
+                    '<i class="fas fa-eye-slash"></i> Ocultar Ruta Crítica';
+                
+                // En versión completa, mostrar/ocultar ruta crítica en el Gantt
+                alert('Funcionalidad de ruta crítica activada/desactivada');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&S Constructor - Sistema de Gestión</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        /* Estilos específicos para la pantalla de bloqueo */
+        .login-container {
+            background: linear-gradient(45deg, #000000, #1a1a2e);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sparkle {
+            position: absolute;
+            background: rgba(255, 215, 0, 0.7);
+            border-radius: 50%;
+            animation: sparkle 2s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(to right, #d4af37, #b8860b, #8b6914);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+            letter-spacing: 3px;
+            margin-bottom: 1rem;
+        }
+
+        .slogan {
+            font-size: 1.2rem;
+            color: #d4af37;
+            font-style: italic;
+            letter-spacing: 1px;
+        }
+
+        .login-form {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2.5rem;
+            border-radius: 15px;
+            border: 1px solid #d4af37;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-title {
+            color: #d4af37;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            color: #d4af37;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #d4af37;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #d4af37;
+            cursor: pointer;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(to right, #d4af37, #b8860b);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .login-btn:hover {
+            background: linear-gradient(to right, #ffd700, #d4af37);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+        }
+
+        .change-password-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #d4af37;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: underline;
+        }
+
+        .change-password-link:hover {
+            color: #ffd700;
+        }
+
+        .version {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: rgba(212, 175, 55, 0.5);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2.5rem;
+            }
+            
+            .login-form {
+                padding: 2rem;
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container" id="loginContainer">
+        <!-- Efecto de destellos -->
+        <div id="sparkles"></div>
+        
+        <div class="logo-container">
+            <div class="logo">BIENVENIDO AL SISTEMA M&S</div>
+            <div class="slogan">EDIFICANDO EL FUTURO</div>
+        </div>
+        
+        <div class="login-form">
+            <div class="form-title">ACCESO ADMINISTRADOR</div>
+            
+            <div class="input-group">
+                <label for="password">CONTRASEÑA</label>
+                <div class="password-container">
+                    <input type="password" id="password" placeholder="Ingrese la contraseña">
+                    <button type="button" class="toggle-password" id="togglePassword">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <button class="login-btn" id="loginBtn">
+                <i class="fas fa-unlock-alt"></i> ACCEDER AL SISTEMA
+            </button>
+            
+            <div class="change-password-link" id="changePasswordLink">
+                Cambiar contraseña
+            </div>
+        </div>
+        
+        <div class="version">v2.0 - CONSTRUCTORA WM/M&S</div>
+    </div>
+
+    <!-- Modal para cambiar contraseña -->
+    <div class="modal" id="changePasswordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Cambiar Contraseña</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="currentPassword">Contraseña Actual</label>
+                    <input type="password" id="currentPassword">
+                </div>
+                <div class="input-group">
+                    <label for="newPassword">Nueva Contraseña</label>
+                    <input type="password" id="newPassword">
+                </div>
+                <div class="input-group">
+                    <label for="confirmPassword">Confirmar Nueva Contraseña</label>
+                    <input type="password" id="confirmPassword">
+                </div>
+                <button class="btn-primary" id="savePasswordBtn">Guardar Nueva Contraseña</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+        // Efecto de destellos
+        function createSparkles() {
+            const container = document.getElementById('sparkles');
+            const sparkleCount = 15;
+            
+            for (let i = 0; i < sparkleCount; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                
+                // Posición aleatoria
+                const left = Math.random() * 100;
+                const top = Math.random() * 100;
+                const size = Math.random() * 10 + 5;
+                const delay = Math.random() * 2;
+                const duration = Math.random() * 2 + 1;
+                
+                sparkle.style.left = `${left}%`;
+                sparkle.style.top = `${top}%`;
+                sparkle.style.width = `${size}px`;
+                sparkle.style.height = `${size}px`;
+                sparkle.style.animationDelay = `${delay}s`;
+                sparkle.style.animationDuration = `${duration}s`;
+                
+                container.appendChild(sparkle);
+            }
+        }
+        
+        // Manejo de login
+        document.addEventListener('DOMContentLoaded', function() {
+            createSparkles();
+            
+            // Verificar si ya hay una contraseña guardada
+            const savedPassword = localStorage.getItem('ms_constructor_password') || 'admin123';
+            
+            // Mostrar/ocultar contraseña
+            document.getElementById('togglePassword').addEventListener('click', function() {
+                const passwordInput = document.getElementById('password');
+                const icon = this.querySelector('i');
+                
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.className = 'fas fa-eye-slash';
+                } else {
+                    passwordInput.type = 'password';
+                    icon.className = 'fas fa-eye';
+                }
+            });
+            
+            // Iniciar sesión
+            document.getElementById('loginBtn').addEventListener('click', function() {
+                const password = document.getElementById('password').value;
+                
+                if (password === savedPassword) {
+                    // Redirigir a la aplicación principal
+                    window.location.href = 'inicio.html';
+                } else {
+                    alert('Contraseña incorrecta. Intente nuevamente.');
+                }
+            });
+            
+            // Permitir login con Enter
+            document.getElementById('password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('loginBtn').click();
+                }
+            });
+            
+            // Modal para cambiar contraseña
+            const changePasswordModal = document.getElementById('changePasswordModal');
+            
+            document.getElementById('changePasswordLink').addEventListener('click', function() {
+                changePasswordModal.style.display = 'flex';
+            });
+            
+            document.querySelector('.close-modal').addEventListener('click', function() {
+                changePasswordModal.style.display = 'none';
+            });
+            
+            // Cambiar contraseña
+            document.getElementById('savePasswordBtn').addEventListener('click', function() {
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (currentPassword !== savedPassword) {
+                    alert('La contraseña actual es incorrecta.');
+                    return;
+                }
+                
+                if (newPassword.length < 4) {
+                    alert('La nueva contraseña debe tener al menos 4 caracteres.');
+                    return;
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    alert('Las contraseñas no coinciden.');
+                    return;
+                }
+                
+                // Guardar nueva contraseña
+                localStorage.setItem('ms_constructor_password', newPassword);
+                alert('Contraseña cambiada exitosamente.');
+                
+                // Limpiar campos y cerrar modal
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+                changePasswordModal.style.display = 'none';
+            });
+            
+            // Cerrar modal haciendo clic fuera
+            window.addEventListener('click', function(event) {
+                if (event.target === changePasswordModal) {
+                    changePasswordModal.style.display = 'none';
+                }
+            });
+        });
+        
+        // Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('ServiceWorker registrado con éxito:', registration.scope);
+                }).catch(error => {
+                    console.log('Error al registrar ServiceWorker:', error);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

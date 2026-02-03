@@ -1,0 +1,27 @@
+# docker-compose.yml
+version: '3.8'
+services:
+  api-gateway:
+    image: nginx:alpine
+    ports: ["80:80"]
+  
+  auth-service:
+    build: ./services/auth
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+  
+  projects-service:
+    build: ./services/projects
+    volumes:
+      - ./data/projects:/app/data
+  
+  ai-service:
+    build: ./services/ai
+    environment:
+      - OPENAI_API_KEY=${OPENAI_KEY}
+  
+  sync-service:
+    build: ./services/sync
+    environment:
+      - FIREBASE_KEY=${FIREBASE_KEY}
+      - GOOGLE_SHEETS_KEY=${GSHEETS_KEY}

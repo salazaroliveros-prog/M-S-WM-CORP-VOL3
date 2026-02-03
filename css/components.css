@@ -1,0 +1,599 @@
+/* Componentes específicos del sistema M&S Constructor */
+
+/* Notificaciones */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    padding: 1rem 1.5rem;
+    min-width: 300px;
+    max-width: 400px;
+    z-index: 9999;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    animation: slideIn 0.3s ease;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--primary-blue);
+    font-size: 1rem;
+}
+
+.notification p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--gray-dark);
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--gray-medium);
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.notification-info {
+    border-left: 4px solid var(--info);
+}
+
+.notification-success {
+    border-left: 4px solid var(--success);
+}
+
+.notification-warning {
+    border-left: 4px solid var(--warning);
+}
+
+.notification-danger {
+    border-left: 4px solid var(--danger);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Gráficas (simuladas para versión básica) */
+.chart-container {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.chart-title {
+    color: var(--primary-blue);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.chart-placeholder {
+    height: 300px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: var(--radius);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--gray-medium);
+    font-style: italic;
+}
+
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.legend-color {
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+}
+
+/* Tabla Gantt simplificada */
+.gantt-container {
+    overflow-x: auto;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1rem;
+}
+
+.gantt-chart {
+    min-width: 800px;
+    position: relative;
+}
+
+.gantt-header {
+    display: flex;
+    background: var(--primary-blue);
+    color: white;
+    font-weight: 600;
+}
+
+.gantt-header-cell {
+    padding: 0.75rem;
+    text-align: center;
+    min-width: 100px;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.gantt-row {
+    display: flex;
+    border-bottom: 1px solid var(--gray-light);
+}
+
+.gantt-row:hover {
+    background: rgba(30, 58, 138, 0.05);
+}
+
+.gantt-task-cell {
+    padding: 0.75rem;
+    min-width: 200px;
+    font-weight: 600;
+    color: var(--primary-blue);
+}
+
+.gantt-bar-cell {
+    flex: 1;
+    padding: 0.75rem;
+    position: relative;
+}
+
+.gantt-bar {
+    height: 30px;
+    background: linear-gradient(to right, var(--accent-gold), var(--accent-dark-gold));
+    border-radius: 15px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.gantt-bar.progress {
+    background: linear-gradient(to right, var(--success), #2ecc71);
+}
+
+.gantt-bar.delayed {
+    background: linear-gradient(to right, var(--danger), #e74c3c);
+}
+
+/* Mapas (simulados) */
+.map-container {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    height: 400px;
+    position: relative;
+}
+
+.map-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: var(--primary-blue);
+}
+
+.map-placeholder i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: var(--accent-gold);
+}
+
+.map-marker {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: var(--success);
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transform: translate(-50%, -50%);
+}
+
+.map-marker.active {
+    background: var(--success);
+    animation: pulse 2s infinite;
+}
+
+.map-marker.inactive {
+    background: var(--danger);
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+/* Tarjetas de métricas */
+.metric-card {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.3s;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+}
+
+.metric-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    color: var(--gray-medium);
+    font-size: 0.9rem;
+}
+
+.metric-change {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.metric-change.positive {
+    color: var(--success);
+}
+
+.metric-change.negative {
+    color: var(--danger);
+}
+
+/* Formularios de asistencia */
+.attendance-form {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2rem;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.attendance-clock {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.attendance-time {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    font-family: 'Courier New', monospace;
+}
+
+.attendance-date {
+    color: var(--gray-medium);
+    font-size: 1.1rem;
+}
+
+.attendance-btn {
+    width: 100%;
+    padding: 1.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.attendance-btn.checkin {
+    background: linear-gradient(to right, var(--success), #2ecc71);
+    color: white;
+}
+
+.attendance-btn.checkin:hover:not(:disabled) {
+    background: linear-gradient(to right, #2ecc71, var(--success));
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+}
+
+.attendance-btn.checkout {
+    background: linear-gradient(to right, var(--warning), #f39c12);
+    color: white;
+}
+
+.attendance-btn.checkout:hover:not(:disabled) {
+    background: linear-gradient(to right, #f39c12, var(--warning));
+    box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+}
+
+.attendance-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.attendance-status {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+}
+
+.attendance-status.present {
+    background: rgba(40, 167, 69, 0.1);
+    color: var(--success);
+    border: 1px solid var(--success);
+}
+
+.attendance-status.absent {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--danger);
+    border: 1px solid var(--danger);
+}
+
+/* Widgets del dashboard */
+.dashboard-widget {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.5rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.widget-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-blue);
+}
+
+.widget-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.widget-action-btn {
+    background: none;
+    border: none;
+    color: var(--gray-medium);
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.widget-action-btn:hover {
+    color: var(--primary-blue);
+}
+
+.widget-content {
+    flex: 1;
+}
+
+.widget-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--gray-light);
+    font-size: 0.85rem;
+    color: var(--gray-medium);
+}
+
+/* Estilos para impresión */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .app-header,
+    .app-footer,
+    .navigation,
+    .btn {
+        display: none !important;
+    }
+    
+    .main-content {
+        padding: 0 !important;
+    }
+    
+    .form-section,
+    .table-container,
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        break-inside: avoid;
+    }
+    
+    body {
+        background: white !important;
+        color: black !important;
+        font-size: 12pt !important;
+    }
+}
+
+/* Ajustes para móviles */
+@media (max-width: 768px) {
+    .notification {
+        left: 20px;
+        right: 20px;
+        max-width: none;
+    }
+    
+    .gantt-container {
+        font-size: 0.8rem;
+    }
+    
+    .gantt-header-cell {
+        min-width: 80px;
+        padding: 0.5rem;
+    }
+    
+    .gantt-task-cell {
+        min-width: 150px;
+        padding: 0.5rem;
+    }
+    
+    .metric-value {
+        font-size: 1.5rem;
+    }
+    
+    .attendance-time {
+        font-size: 2.5rem;
+    }
+}
+
+/* Animaciones de carga */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(30, 58, 138, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--primary-blue);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.loading-overlay .loading {
+    width: 40px;
+    height: 40px;
+    border-width: 4px;
+}
+
+.loading-overlay p {
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+/* Alertas personalizadas */
+.alert {
+    padding: 1rem;
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.alert-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.alert-content {
+    flex: 1;
+}
+
+.alert-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.alert-message {
+    font-size: 0.95rem;
+}
+
+.alert-info {
+    background: rgba(23, 162, 184, 0.1);
+    border-left: 4px solid var(--info);
+    color: var(--info);
+}
+
+.alert-success {
+    background: rgba(40, 167, 69, 0.1);
+    border-left: 4px solid var(--success);
+    color: var(--success);
+}
+
+.alert-warning {
+    background: rgba(255, 193, 7, 0.1);
+    border-left: 4px solid var(--warning);
+    color: var(--warning);
+}
+
+.alert-danger {
+    background: rgba(220, 53, 69, 0.1);
+    border-left: 4px solid var(--danger);
+    color: var(--danger);
+}

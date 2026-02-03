@@ -1,0 +1,19 @@
+<!-- modulo-ar.html -->
+<div class="ar-container">
+    <video id="arCamera" autoplay></video>
+    <canvas id="arCanvas"></canvas>
+    
+    <!-- Funcionalidades AR -->
+    <div class="ar-controls">
+        <button onclick="medirAreaAR()">📏 Medir Área</button>
+        <button onclick="superponerPlanos()">📐 Ver Planos</button>
+        <button onclick="detectarErrores()">🔍 Detectar Errores</button>
+        <button onclick="calcularVolumen()">📦 Calcular Volumen</button>
+    </div>
+    
+    <!-- Panel de información AR -->
+    <div class="ar-panel">
+        <h4>Información en Tiempo Real</h4>
+        <div id="arInfo">Cargando...</div>
+    </div>
+</div>

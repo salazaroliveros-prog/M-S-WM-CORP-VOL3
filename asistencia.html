@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>App de Asistencia - Constructora WM/M&S</title>
+    <link rel="stylesheet" href="estilos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --azul-marino: #1a237e;
+            --mostaza-oscuro: #d4a017;
+            --gris-oscuro: #333;
+            --blanco: #fff;
+            --verde: #4caf50;
+            --rojo: #f44336;
+        }
+
+        .asistencia-container {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: var(--blanco);
+            overflow-x: hidden;
+        }
+
+        .asistencia-header {
+            background: linear-gradient(90deg, var(--azul-marino) 0%, #283593 100%);
+            color: var(--mostaza-oscuro);
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 3px solid var(--mostaza-oscuro);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .asistencia-header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .asistencia-header .slogan {
+            font-size: 0.8rem;
+            color: #ffd54f;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .status-dot.active {
+            background: var(--verde);
+            box-shadow: 0 0 10px var(--verde);
+        }
+
+        .status-dot.inactive {
+            background: var(--rojo);
+            box-shadow: 0 0 10px var(--rojo);
+        }
+
+        .main-content {
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .worker-info-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 2px solid rgba(212, 160, 23, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .worker-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--mostaza-oscuro);
+            margin: 0 auto 15px;
+            overflow: hidden;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--mostaza-oscuro);
+        }
+
+        .worker-name {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .worker-position {
+            color: #ffd54f;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .worker-id {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+
+        .attendance-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .attendance-btn {
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .attendance-btn.primary {
+            background: linear-gradient(135deg, var(--verde) 0%, #388e3c 100%);
+            color: white;
+        }
+
+        .attendance-btn.primary:hover {
+            background: linear-gradient(135deg, #388e3c 0%, var(--verde) 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(56, 142, 60, 0.4);
+        }
+
+        .attendance-btn.secondary {
+            background: linear-gradient(135deg, var(--azul-marino) 0%, #283593 100%);
+            color: white;
+        }
+
+        .attendance-btn.secondary:hover {
+            background: linear-gradient(135deg, #283593 0%, var(--azul-marino) 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(26, 35, 126, 0.4);
+        }
+
+        .attendance-btn.warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+        }
+
+        .attendance-btn.warning:hover {
+            background: linear-gradient(135deg, #f57c00 0%, #ff9800 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(245, 124, 0, 0.4);
+        }
+
+        .attendance-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .timer-display {
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #ffd54f;
+            font-family: monospace;
+            text-shadow: 0 0 10px rgba(255, 213, 79, 0.5);
+        }
+
+        .schedule-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .schedule-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .schedule-time {
+            color: #ffd54f;
+            font-weight: bold;
+        }
+
+        .attendance-history {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-title {
+            color: var(--mostaza-oscuro);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-time {
+            color: #4caf50;
+        }
+
+        .location-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .location-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .location-status.in-range {
+            background: var(--verde);
+            box-shadow: 0 0 10px var(--verde);
+        }
+
+        .location-status.out-range {
+            background: var(--rojo);
+            box-shadow: 0 0 10px var(--rojo);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--rojo);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .admin-mode {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--mostaza-oscuro);
+            color: var(--azul-marino);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 15px;
+            }
+            
+            .attendance-btn {
+                font-size: 1.1rem;
+                padding: 15px;
+            }
+            
+            .timer-display {
+                font-size: 2.5rem;
+            }
+        }
+
+        /* Modal para marcación de otro trabajador */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 15px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            border: 2px solid var(--mostaza-oscuro);
+        }
+
+        .modal-title {
+            color: var(--mostaza-oscuro);
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.3rem;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="asistencia-container">
+    <!-- Encabezado -->
+    <header class="asistencia-header">
+        <h1>APP DE ASISTENCIA</h1>
+        <div class="slogan">CONSTRUCTORA WM/M&S - EDIFICANDO EL FUTURO</div>
+        <div class="status-indicator">
+            <div class="status-dot" id="connectionStatus"></div>
+            <span id="statusText">Conectando...</span>
+        </div>
+    </header>
+
+    <!-- Indicador de modo administrador -->
+    <div class="admin-mode" id="adminModeIndicator" style="display: none;">
+        <i class="fas fa-user-shield"></i> MODO ADMIN
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="main-content">
+        <!-- Información del Trabajador -->
+        <div class="worker-info-card">
+            <div class="worker-avatar" id="workerAvatar">
+                <i class="fas fa-user-hard-hat"></i>
+            </div>
+            <div class="worker-name" id="workerName">CARGANDO...</div>
+            <div class="worker-position" id="workerPosition">-</div>
+            <div class="worker-id" id="workerId">ID: ---------</div>
+            <div class="location-info" id="locationInfo">
+                <div class="location-status" id="locationStatus"></div>
+                <span id="locationText">Verificando ubicación...</span>
+            </div>
+        </div>
+
+        <!-- Temporizador -->
+        <div class="timer-display" id="currentTime">07:00:00</div>
+
+        <!-- Controles de Asistencia -->
+        <div class="attendance-controls">
+            <button class="attendance-btn primary" id="markAttendanceBtn" onclick="markAttendance()">
+                <i class="fas fa-fingerprint"></i> MARCAR ASISTENCIA
+            </button>
+
+            <button class="attendance-btn secondary" onclick="markOtherAttendance()">
+                <i class="fas fa-user-friends"></i> MARCAR PARA OTRO TRABAJADOR
+            </button>
+
+            <button class="attendance-btn warning" onclick="sendMessage()">
+                <i class="fas fa-comment-alt"></i> ENVIAR MENSAJE
+            </button>
+
+            <button class="attendance-btn secondary" onclick="openWalkieTalkie()">
+                <i class="fas fa-broadcast-tower"></i> WALKIE TALKIE
+            </button>
+        </div>
+
+        <!-- Información de Horario -->
+        <div class="schedule-info">
+            <div class="schedule-item">
+                <span>Entrada:</span>
+                <span class="schedule-time">07:00 AM</span>
+            </div>
+            <div class="schedule-item">
+                <span>Refacción:</span>
+                <span class="schedule-time">09:00 - 09:30 AM</span>
+            </div>
+            <div class="schedule-item">
+                <span>Almuerzo:</span>
+                <span class="schedule-time">12:00 - 13:00 PM</span>
+            </div>
+            <div class="schedule-item">
+                <span>Salida:</span>
+                <span class="schedule-time">16:00 PM</span>
+            </div>
+        </div>
+
+        <!-- Historial de Asistencia -->
+        <div class="attendance-history">
+            <div class="history-title">
+                <i class="fas fa-history"></i> HISTORIAL DE HOY
+            </div>
+            <div id="attendanceHistory">
+                <!-- Historial se cargará dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Notificaciones -->
+        <div id="notificationArea" style="margin-top: 20px;"></div>
+    </div>
+
+    <!-- Modal para marcar asistencia de otro trabajador -->
+    <div class="modal" id="otherWorkerModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeOtherWorkerModal()">&times;</button>
+            <div class="modal-title">MARCAR ASISTENCIA PARA OTRO TRABAJADOR</div>
+            
+            <div class="form-group">
+                <label for="otherWorkerId">ID del Trabajador *</label>
+                <input type="text" id="otherWorkerId" placeholder="Ingrese el ID del trabajador" 
+                       style="width: 100%; padding: 12px; border-radius: 8px; background: #222; color: white; border: 1px solid #555;">
+            </div>
+            
+            <div class="form-group" style="margin-top: 15px;">
+                <label for="otherWorkerPin">PIN de Seguridad</label>
+                <input type="password" id="otherWorkerPin" placeholder="PIN (si aplica)"
+                       style="width: 100%; padding: 12px; border-radius: 8px; background: #222; color: white; border: 1px solid #555;">
+            </div>
+            
+            <button class="attendance-btn primary" style="width: 100%; margin-top: 20px;" onclick="submitOtherAttendance()">
+                <i class="fas fa-check-circle"></i> CONFIRMAR MARCACIÓN
+            </button>
+            
+            <div style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: #ccc;">
+                Esta acción será registrada y verificada por el administrador
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Walkie Talkie -->
+    <div class="modal" id="walkieTalkieModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeWalkieTalkie()">&times;</button>
+            <div class="modal-title">WALKIE TALKIE</div>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <div style="font-size: 2rem; color: var(--mostaza-oscuro);">
+                    <i class="fas fa-broadcast-tower"></i>
+                </div>
+                <div style="margin: 15px 0;">Presione para hablar</div>
+                
+                <button class="attendance-btn primary" id="talkButton" 
+                        style="width: 80px; height: 80px; border-radius: 50%; margin: 0 auto;"
+                        onmousedown="startTalking()" onmouseup="stopTalking()" ontouchstart="startTalking()" ontouchend="stopTalking()">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                
+                <div style="margin-top: 20px; font-size: 0.9rem; color: #ccc;">
+                    Conectado a: <span id="connectedTo">Administrador</span>
+                </div>
+            </div>
+            
+            <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin-top: 20px;">
+                <div style="color: var(--mostaza-oscuro); margin-bottom: 10px;">Contactos Disponibles:</div>
+                <div id="contactsList" style="max-height: 150px; overflow-y: auto;">
+                    <!-- Contactos se cargarán aquí -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos del trabajador actual
+        let currentWorker = {
+            id: '',
+            name: '',
+            position: '',
+            project: '',
+            status: 'inactive',
+            lastAttendance: null,
+            location: null,
+            isInRange: false
+        };
+
+        // Estado de la aplicación
+        let appState = {
+            isAdminMode: false,
+            attendanceMarked: false,
+            currentProject: null,
+            notifications: []
+        };
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            loadWorkerData();
+            checkLocation();
+            setInterval(checkLocation, 30000); // Verificar ubicación cada 30 segundos
+            
+            loadAttendanceHistory();
+            checkNotifications();
+            
+            // Verificar si es modo administrador
+            checkAdminMode();
+        });
+
+        // Actualizar hora actual
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            
+            document.getElementById('currentTime').textContent = `${hours}:${minutes}:${seconds}`;
+            
+            // Verificar si es hora de marcar asistencia
+            checkAttendanceTime(now);
+        }
+
+        // Cargar datos del trabajador
+        function loadWorkerData() {
+            // Intentar cargar del localStorage
+            const savedWorker = localStorage.getItem('currentWorker');
+            const savedAttendance = localStorage.getItem('todayAttendance');
+            
+            if (savedWorker) {
+                currentWorker = JSON.parse(savedWorker);
+                updateWorkerUI();
+                
+                if (savedAttendance) {
+                    const attendance = JSON.parse(savedAttendance);
+                    if (attendance.date === new Date().toDateString()) {
+                        appState.attendanceMarked = attendance.marked;
+                        updateAttendanceButton();
+                    }
+                }
+            } else {
+                // Datos de ejemplo (en producción se obtendrían del login)
+                currentWorker = {
+                    id: 'TRB' + Math.floor(1000 + Math.random() * 9000),
+                    name: 'Juan Pérez',
+                    position: 'Albañil',
+                    project: 'Casa Jardín',
+                    status: 'active',
+                    lastAttendance: null,
+                    location: null,
+                    isInRange: false
+                };
+                
+                localStorage.setItem('currentWorker', JSON.stringify(currentWorker));
+                updateWorkerUI();
+            }
+            
+            // Actualizar estado de conexión
+            updateConnectionStatus(true);
+        }
+
+        // Actualizar interfaz del trabajador
+        function updateWorkerUI() {
+            document.getElementById('workerName').textContent = currentWorker.name;
+            document.getElementById('workerPosition').textContent = currentWorker.position;
+            document.getElementById('workerId').textContent = `ID: ${currentWorker.id}`;
+            
+            // Actualizar avatar con iniciales
+            const initials = currentWorker.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            document.getElementById('workerAvatar').innerHTML = `<span style="font-size: 2.5rem;">${initials}</span>`;
+        }
+
+        // Verificar ubicación
+        function checkLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        currentWorker.location = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            accuracy: position.coords.accuracy
+                        };
+                        
+                        // Verificar si está en rango (simulado)
+                        const isInRange = simulateLocationCheck(position.coords);
+                        currentWorker.isInRange = isInRange;
+                        
+                        updateLocationUI(isInRange);
+                        
+                        // Si no está en rango y no ha marcado asistencia, notificar
+                        if (!isInRange && !appState.attendanceMarked) {
+                            showNotification('warning', 'No estás en el área de trabajo. La asistencia no será válida.');
+                        }
+                    },
+                    (error) => {
+                        console.error('Error obteniendo ubicación:', error);
+                        updateLocationUI(false);
+                        showNotification('error', 'No se pudo obtener la ubicación. Verifica el GPS.');
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } else {
+                showNotification('error', 'Tu dispositivo no soporta geolocalización');
+            }
+        }
+
+        // Simular verificación de ubicación (en producción se compararía con coordenadas del proyecto)
+        function simulateLocationCheck(coords) {
+            // Simular que el trabajador está en rango el 90% del tiempo
+            return Math.random() > 0.1;
+        }
+
+        // Actualizar UI de ubicación
+        function updateLocationUI(isInRange) {
+            const statusDot = document.getElementById('locationStatus');
+            const locationText = document.getElementById('locationText');
+            
+            if (isInRange) {
+                statusDot.className = 'location-status in-range';
+                locationText.textContent = 'Dentro del área de trabajo';
+                document.getElementById('markAttendanceBtn').disabled = false;
+            } else {
+                statusDot.className = 'location-status out-range';
+                locationText.textContent = 'Fuera del área de trabajo';
+                document.getElementById('markAttendanceBtn').disabled = true;
+            }
+        }
+
+        // Actualizar estado de conexión
+        function updateConnectionStatus(connected) {
+            const statusDot = document.getElementById('connectionStatus');
+            const statusText = document.getElementById('statusText');
+            
+            if (connected) {
+                statusDot.className = 'status-dot active';
+                statusText.textContent = 'Conectado';
+            } else {
+                statusDot.className = 'status-dot inactive';
+                statusText.textContent = 'Desconectado';
+            }
+        }
+
+        // Verificar hora de asistencia
+        function checkAttendanceTime(currentTime) {
+            const hours = currentTime.getHours();
+            const minutes = currentTime.getMinutes();
+            
+            // Hora de entrada: 7:00 AM
+            if (hours === 7 && minutes === 0 && !appState.attendanceMarked) {
+                showNotification('info', 'Es hora de marcar asistencia');
+            }
+            
+            // Tiempo límite para marcar: 7:15 AM
+            if (hours === 7 && minutes === 15 && !appState.attendanceMarked) {
+                showNotification('warning', 'Quedan 10 minutos para marcar asistencia');
+            }
+            
+            // Fin del tiempo para marcar: 7:25 AM
+            if (hours === 7 && minutes === 25 && !appState.attendanceMarked) {
+                showNotification('error', '¡Tiempo agotado! No podrás marcar asistencia hoy');
+                document.getElementById('markAttendanceBtn').disabled = true;
+            }
+        }
+
+        // Marcar asistencia
+        function markAttendance() {
+            if (!currentWorker.isInRange) {
+                showNotification('error', 'No puedes marcar asistencia fuera del área de trabajo');
+                return;
+            }
+            
+            if (appState.attendanceMarked) {
+                showNotification('info', 'Ya marcaste asistencia hoy');
+                return;
+            }
+            
+            // Registrar asistencia
+            const attendanceRecord = {
+                workerId: currentWorker.id,
+                workerName: currentWorker.name,
+                timestamp: new Date().toISOString(),
+                location: currentWorker.location,
+                type: 'entrada',
+                verified: true
+            };
+            
+            // Guardar en localStorage
+            saveAttendanceRecord(attendanceRecord);
+            
+            // Actualizar estado
+            appState.attendanceMarked = true;
+            currentWorker.lastAttendance = new Date();
+            
+            // Actualizar UI
+            updateAttendanceButton();
+            addToHistory(attendanceRecord);
+            
+            // Mostrar confirmación
+            showNotification('success', '¡Asistencia marcada exitosamente! Hora: ' + 
+                new Date().toLocaleTimeString('es-GT', {hour: '2-digit', minute:'2-digit'}));
+            
+            // Simular envío al servidor
+            simulateSync(attendanceRecord);
+        }
+
+        // Guardar registro de asistencia
+        function saveAttendanceRecord(record) {
+            // Guardar en localStorage
+            let attendanceHistory = JSON.parse(localStorage.getItem('attendanceHistory')) || [];
+            attendanceHistory.push(record);
+            localStorage.setItem('attendanceHistory', JSON.stringify(attendanceHistory));
+            
+            // Guardar asistencia de hoy
+            const todayAttendance = {
+                date: new Date().toDateString(),
+                marked: true,
+                records: attendanceHistory.filter(r => new Date(r.timestamp).toDateString() === new Date().toDateString())
+            };
+            localStorage.setItem('todayAttendance', JSON.stringify(todayAttendance));
+            
+            // Guardar datos actualizados del trabajador
+            localStorage.setItem('currentWorker', JSON.stringify(currentWorker));
+        }
+
+        // Actualizar botón de asistencia
+        function updateAttendanceButton() {
+            const button = document.getElementById('markAttendanceBtn');
+            if (appState.attendanceMarked) {
+                button.innerHTML = '<i class="fas fa-check-circle"></i> ASISTENCIA MARCADA';
+                button.disabled = true;
+                button.style.opacity = '0.7';
+            } else {
+                button.innerHTML = '<i class="fas fa-fingerprint"></i> MARCAR ASISTENCIA';
+                button.disabled = !currentWorker.isInRange;
+                button.style.opacity = currentWorker.isInRange ? '1' : '0.5';
+            }
+        }
+
+        // Cargar historial de asistencia
+        function loadAttendanceHistory() {
+            const historyContainer = document.getElementById('attendanceHistory');
+            const today = new Date().toDateString();
+            
+            let attendanceHistory = JSON.parse(localStorage.getItem('attendanceHistory')) || [];
+            
+            // Filtrar registros de hoy
+            const todayRecords = attendanceHistory.filter(record => 
+                new Date(record.timestamp).toDateString() === today
+            );
+            
+            if (todayRecords.length === 0) {
+                historyContainer.innerHTML = '<div class="history-item">No hay registros hoy</div>';
+            } else {
+                historyContainer.innerHTML = '';
+                todayRecords.forEach(record => {
+                    const time = new Date(record.timestamp).toLocaleTimeString('es-GT', 
+                        {hour: '2-digit', minute:'2-digit'});
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.innerHTML = `
+                        <span>${record.type === 'entrada' ? '🟢 Entrada' : '🔴 Salida'}</span>
+                        <span class="history-time">${time}</span>
+                    `;
+                    historyContainer.appendChild(item);
+                });
+            }
+        }
+
+        // Agregar registro al historial
+        function addToHistory(record) {
+            const historyContainer = document.getElementById('attendanceHistory');
+            const time = new Date(record.timestamp).toLocaleTimeString('es-GT', 
+                {hour: '2-digit', minute:'2-digit'});
+            
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerHTML = `
+                <span>🟢 Entrada</span>
+                <span class="history-time">${time}</span>
+            `;
+            
+            historyContainer.insertBefore(item, historyContainer.firstChild);
+        }
+
+        // Marcar asistencia para otro trabajador
+        function markOtherAttendance() {
+            if (!currentWorker.isInRange) {
+                showNotification('error', 'Debes estar en el área de trabajo para esta acción');
+                return;
+            }
+            
+            document.getElementById('otherWorkerModal').style.display = 'flex';
+        }
+
+        // Cerrar modal de otro trabajador
+        function closeOtherWorkerModal() {
+            document.getElementById('otherWorkerModal').style.display = 'none';
+        }
+
+        // Enviar marcación para otro trabajador
+        function submitOtherAttendance() {
+            const workerId = document.getElementById('otherWorkerId').value.trim();
+            const pin = document.getElementById('otherWorkerPin').value.trim();
+            
+            if (!workerId) {
+                showNotification('error', 'Ingresa el ID del trabajador');
+                return;
+            }
+            
+            // Verificar PIN (simulado)
+            if (pin && pin !== '1234') { // PIN de ejemplo
+                showNotification('error', 'PIN incorrecto');
+                return;
+            }
+            
+            // Registrar asistencia para otro trabajador
+            const attendanceRecord = {
+                workerId: workerId,
+                workerName: 'Trabajador ' + workerId,
+                markedBy: currentWorker.id,
+                markedByName: currentWorker.name,
+                timestamp: new Date().toISOString(),
+                location: currentWorker.location,
+                type: 'entrada',
+                verified: false // Necesita verificación del administrador
+            };
+            
+            // Guardar registro
+            saveAttendanceRecord(attendanceRecord);
+            
+            // Mostrar confirmación
+            showNotification('success', `Asistencia marcada para trabajador ${workerId}. Pendiente de verificación.`);
+            
+            // Cerrar modal y limpiar campos
+            closeOtherWorkerModal();
+            document.getElementById('otherWorkerId').value = '';
+            document.getElementById('otherWorkerPin').value = '';
+            
+            // Simular envío de notificación al administrador
+            simulateAdminNotification(attendanceRecord);
+        }
+
+        // Enviar mensaje
+        function sendMessage() {
+            const message = prompt('Escribe tu mensaje para el administrador:');
+            if (message) {
+                showNotification('info', 'Mensaje enviado: ' + message.substring(0, 50) + '...');
+                
+                // Simular envío
+                setTimeout(() => {
+                    showNotification('success', 'Mensaje recibido por el administrador');
+                }, 2000);
+            }
+        }
+
+        // Abrir walkie talkie
+        function openWalkieTalkie() {
+            loadContacts();
+            document.getElementById('walkieTalkieModal').style.display = 'flex';
+        }
+
+        // Cerrar walkie talkie
+        function closeWalkieTalkie() {
+            document.getElementById('walkieTalkieModal').style.display = 'none';
+            stopTalking(); // Asegurarse de que no se está transmitiendo
+        }
+
+        // Cargar contactos
+        function loadContacts() {
+            const contactsList = document.getElementById('contactsList');
+            
+            // Contactos de ejemplo
+            const contacts = [
+                { id: 'ADMIN001', name: 'Administrador', role: 'Admin', status: 'online' },
+                { id: 'SUP001', name: 'Supervisor Juan', role: 'Supervisor', status: 'online' },
+                { id: 'ENC001', name: 'Encargado Carlos', role: 'Encargado', status: 'busy' },
+                { id: 'TRB1234', name: 'Albañil Miguel', role: 'Albañil', status: 'online' }
+            ];
+            
+            contactsList.innerHTML = '';
+            contacts.forEach(contact => {
+                const contactItem = document.createElement('div');
+                contactItem.style.padding = '8px';
+                contactItem.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+                contactItem.style.display = 'flex';
+                contactItem.style.justifyContent = 'space-between';
+                contactItem.style.alignItems = 'center';
+                
+                const statusColor = contact.status === 'online' ? '#4caf50' : 
+                                  contact.status === 'busy' ? '#ff9800' : '#f44336';
+                
+                contactItem.innerHTML = `
+                    <div>
+                        <div style="font-weight: bold;">${contact.name}</div>
+                        <div style="font-size: 0.8rem; color: #ccc;">${contact.role}</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: ${statusColor};"></div>
+                        <button onclick="selectContact('${contact.id}', '${contact.name}')" 
+                                style="background: var(--mostaza-oscuro); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
+                            <i class="fas fa-phone"></i>
+                        </button>
+                    </div>
+                `;
+                
+                contactsList.appendChild(contactItem);
+            });
+        }
+
+        // Seleccionar contacto
+        function selectContact(contactId, contactName) {
+            document.getElementById('connectedTo').textContent = contactName;
+            showNotification('success', `Conectado a ${contactName}`);
+        }
+
+        // Comenzar a hablar
+        function startTalking() {
+            document.getElementById('talkButton').style.background = 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)';
+            document.getElementById('talkButton').innerHTML = '<i class="fas fa-microphone-alt"></i>';
+            
+            // Simular transmisión
+            showNotification('info', 'Transmitiendo...');
+        }
+
+        // Dejar de hablar
+        function stopTalking() {
+            document.getElementById('talkButton').style.background = 'linear-gradient(135deg, var(--verde) 0%, #388e3c 100%)';
+            document.getElementById('talkButton').innerHTML = '<i class="fas fa-microphone"></i>';
+            
+            // Simular fin de transmisión
+            showNotification('success', 'Transmisión finalizada');
+        }
+
+        // Verificar si es modo administrador
+        function checkAdminMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            appState.isAdminMode = urlParams.get('admin') === 'true';
+            
+            if (appState.isAdminMode) {
+                document.getElementById('adminModeIndicator').style.display = 'block';
+                // Aquí se cargarían funciones adicionales para administrador
+            }
+        }
+
+        // Mostrar notificación
+        function showNotification(type, message) {
+            const notificationArea = document.getElementById('notificationArea');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.style.background = type === 'success' ? 'rgba(76, 175, 80, 0.2)' :
+                                           type === 'error' ? 'rgba(244, 67, 54, 0.2)' :
+                                           type === 'warning' ? 'rgba(255, 152, 0, 0.2)' :
+                                           'rgba(33, 150, 243, 0.2)';
+            notification.style.border = `1px solid ${type === 'success' ? '#4caf50' :
+                                               type === 'error' ? '#f44336' :
+                                               type === 'warning' ? '#ff9800' : '#2196f3'}`;
+            notification.style.padding = '12px';
+            notification.style.borderRadius = '8px';
+            notification.style.marginBottom = '10px';
+            notification.style.color = 'white';
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                                       type === 'error' ? 'exclamation-circle' : 
+                                       type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            notificationArea.appendChild(notification);
+            
+            // Auto-eliminar después de 5 segundos
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 5000);
+            
+            // Guardar en historial de notificaciones
+            appState.notifications.push({ type, message, timestamp: new Date() });
+        }
+
+        // Verificar notificaciones pendientes
+        function checkNotifications() {
+            // Simular notificaciones del sistema
+            const now = new Date();
+            const hour = now.getHours();
+            
+            if (hour >= 7 && hour < 19 && !appState.attendanceMarked) {
+                setTimeout(() => {
+                    showNotification('warning', 'Recuerda marcar tu asistencia');
+                }, 30000); // 30 segundos después de cargar
+            }
+        }
+
+        // Simular sincronización con servidor
+        function simulateSync(data) {
+            updateConnectionStatus(false); // Mostrar como desconectado durante sync
+            
+            setTimeout(() => {
+                updateConnectionStatus(true);
+                console.log('Datos sincronizados:', data);
+            }, 2000);
+        }
+
+        // Simular notificación al administrador
+        function simulateAdminNotification(data) {
+            console.log('Notificación enviada al administrador:', data);
+            
+            // En producción, aquí se enviaría una notificación push o se actualizaría la BD
+            showNotification('info', 'Notificación enviada al administrador');
+        }
+
+        // Función para salir/cerrar sesión
+        function logout() {
+            if (confirm('¿Está seguro de salir de la aplicación de asistencia?')) {
+                // Limpiar datos de sesión si es necesario
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Exponer funciones globales necesarias
+        window.markAttendance = markAttendance;
+        window.markOtherAttendance = markOtherAttendance;
+        window.sendMessage = sendMessage;
+        window.openWalkieTalkie = openWalkieTalkie;
+        window.closeOtherWorkerModal = closeOtherWorkerModal;
+        window.submitOtherAttendance = submitOtherAttendance;
+        window.closeWalkieTalkie = closeWalkieTalkie;
+        window.startTalking = startTalking;
+        window.stopTalking = stopTalking;
+        window.selectContact = selectContact;
+    </script>
+</body>
+</html>

@@ -1,0 +1,2000 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&S Constructor - Recursos Humanos</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <script src="js/payroll-manager.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .employee-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--accent-gold);
+        }
+        
+        .employee-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .employee-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+        
+        .employee-id {
+            font-size: 0.9rem;
+            color: var(--gray-medium);
+            margin-top: 0.25rem;
+        }
+        
+        .employee-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .employee-status.active {
+            background: rgba(40, 167, 69, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        
+        .employee-status.inactive {
+            background: rgba(108, 117, 125, 0.2);
+            color: var(--gray-medium);
+            border: 1px solid var(--gray-medium);
+        }
+        
+        .employee-status.terminated {
+            background: rgba(220, 53, 69, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+        
+        .employee-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .detail-item {
+            font-size: 0.9rem;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: var(--gray-dark);
+            display: block;
+        }
+        
+        .detail-value {
+            color: var(--gray-medium);
+        }
+        
+        .position-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(30, 58, 138, 0.1);
+            color: var(--primary-blue);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .attendance-table th {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        
+        .attendance-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--gray-light);
+            font-size: 0.9rem;
+        }
+        
+        .attendance-status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .attendance-status.present {
+            background: var(--success);
+        }
+        
+        .attendance-status.absent {
+            background: var(--danger);
+        }
+        
+        .attendance-status.late {
+            background: var(--warning);
+        }
+        
+        .attendance-status.half-day {
+            background: var(--info);
+        }
+        
+        .payroll-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+        }
+        
+        .payroll-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .payroll-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            border-radius: var(--radius);
+        }
+        
+        .signature-pad {
+            border: 2px dashed var(--gray-light);
+            border-radius: var(--radius);
+            height: 150px;
+            margin: 1rem 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            background: white;
+        }
+        
+        .signature-pad canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: var(--radius);
+        }
+        
+        .biometric-data {
+            background: var(--gray-light);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .gps-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(40, 167, 69, 0.2);
+            border-radius: var(--radius);
+            color: var(--success);
+            font-weight: 600;
+        }
+        
+        .gps-indicator.inactive {
+            background: rgba(220, 53, 69, 0.2);
+            color: var(--danger);
+        }
+        
+        .walkie-talkie {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        
+        .walkie-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin: 0 1rem;
+            transition: transform 0.3s;
+        }
+        
+        .walkie-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .walkie-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .walkie-btn.talking {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
+        
+        .map-container-small {
+            height: 300px;
+            margin-top: 1rem;
+        }
+        
+        .contract-form {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div>
+                    <div class="logo-small">CONSTRUCTORA WM/M&S</div>
+                    <div class="slogan-small">EDIFICANDO EL FUTURO</div>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="datetime" id="currentDateTime"></div>
+                <button class="btn btn-danger btn-small" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Filtros principales -->
+            <div class="filters-container">
+                <h2 class="section-title">Recursos Humanos y Planillas</h2>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="projectFilter">Proyecto</label>
+                        <select id="projectFilter">
+                            <option value="">Todos los proyectos</option>
+                            <option value="all_active">Todos los proyectos activos</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="positionFilter">Puesto</label>
+                        <select id="positionFilter">
+                            <option value="">Todos los puestos</option>
+                            <option value="supervisor">Supervisor (Q 250.00/día)</option>
+                            <option value="encargado">Encargado (Q 250.00/día)</option>
+                            <option value="maestro">Maestro de Obras (Q 200.00/día)</option>
+                            <option value="albañil">Albañil (Q 175.00/día)</option>
+                            <option value="ayudante">Ayudante (Q 125.00/día)</option>
+                            <option value="peon">Peón (Q 100.00/día)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="statusFilter">Estado</label>
+                        <select id="statusFilter">
+                            <option value="">Todos los estados</option>
+                            <option value="active">Activo</option>
+                            <option value="inactive">Inactivo</option>
+                            <option value="terminated">Terminado</option>
+                            <option value="pending">Pendiente de contrato</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="dateFilter">Fecha</label>
+                        <input type="date" id="dateFilter">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen de RRHH -->
+            <div class="cards-container">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Empleados Activos</div>
+                        <div class="card-value" id="activeEmployees">0</div>
+                    </div>
+                    <div class="card-footer">
+                        En proyectos actuales
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Asistencia Hoy</div>
+                        <div class="card-value" id="todayAttendance">0%</div>
+                    </div>
+                    <div class="card-footer">
+                        <span id="presentCount">0</span> presentes
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Planilla Semanal</div>
+                        <div class="card-value" id="weeklyPayroll">Q 0.00</div>
+                    </div>
+                    <div class="card-footer">
+                        Proyectada para esta semana
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Vacantes</div>
+                        <div class="card-value" id="openPositions">0</div>
+                    </div>
+                    <div class="card-footer">
+                        Puestos disponibles
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pestañas de funcionalidades -->
+            <div class="tabs-container mt-4">
+                <div class="tabs-header">
+                    <button class="tab-btn active" data-tab="employees">Empleados</button>
+                    <button class="tab-btn" data-tab="contracts">Contratos</button>
+                    <button class="tab-btn" data-tab="attendance">Asistencia</button>
+                    <button class="tab-btn" data-tab="payroll">Planillas</button>
+                    <button class="tab-btn" data-tab="tracking">Seguimiento</button>
+                    <button class="tab-btn" data-tab="new-contract">Nuevo Contrato</button>
+                </div>
+                
+                <!-- Contenido de pestañas -->
+                <div class="tabs-content">
+                    <!-- Pestaña de Empleados -->
+                    <div class="tab-pane active" id="employees-tab">
+                        <div class="form-section">
+                            <div class="section-header">
+                                <h3 class="section-title">Lista de Empleados</h3>
+                                <button class="btn btn-primary btn-small" id="addEmployeeBtn">
+                                    <i class="fas fa-user-plus"></i> Nuevo Empleado
+                                </button>
+                            </div>
+                            
+                            <div id="employeesList">
+                                <!-- Empleados cargados dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pestaña de Contratos -->
+                    <div class="tab-pane" id="contracts-tab">
+                        <div class="form-section">
+                            <h3 class="section-title">Contratos Activos</h3>
+                            
+                            <div class="table-container">
+                                <div class="table-responsive">
+                                    <table class="data-table" id="contractsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Empleado</th>
+                                                <th>DPI/CUI</th>
+                                                <th>Puesto</th>
+                                                <th>Proyecto</th>
+                                                <th>Salario Diario</th>
+                                                <th>Fecha Inicio</th>
+                                                <th>Fecha Fin</th>
+                                                <th>Estado</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Contratos cargados dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pestaña de Asistencia -->
+                    <div class="tab-pane" id="attendance-tab">
+                        <div class="form-section">
+                            <h3 class="section-title">Registro de Asistencia</h3>
+                            
+                            <div class="filter-row mb-3">
+                                <div class="filter-group">
+                                    <label for="attendanceDate">Fecha</label>
+                                    <input type="date" id="attendanceDate" value="">
+                                </div>
+                                <div class="filter-group">
+                                    <button class="btn btn-primary" id="markAllPresentBtn">
+                                        <i class="fas fa-check-circle"></i> Marcar Todos Presentes
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="table-container">
+                                <div class="table-responsive">
+                                    <table class="data-table" id="attendanceTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Empleado</th>
+                                                <th>Puesto</th>
+                                                <th>Proyecto</th>
+                                                <th>Entrada</th>
+                                                <th>Salida</th>
+                                                <th>Horas Trabajadas</th>
+                                                <th>Estado</th>
+                                                <th>Ubicación</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Asistencia cargada dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pestaña de Planillas -->
+                    <div class="tab-pane" id="payroll-tab">
+                        <div class="form-section">
+                            <h3 class="section-title">Cálculo de Planillas</h3>
+                            
+                            <div class="payroll-summary">
+                                <h3 class="text-center mb-3">Resumen de Planilla</h3>
+                                <div class="payroll-grid">
+                                    <div class="payroll-item">
+                                        <div>Período</div>
+                                        <div class="metric-value" id="payrollPeriod">Semana 1</div>
+                                    </div>
+                                    <div class="payroll-item">
+                                        <div>Total Empleados</div>
+                                        <div class="metric-value" id="payrollEmployees">0</div>
+                                    </div>
+                                    <div class="payroll-item">
+                                        <div>Días Laborados</div>
+                                        <div class="metric-value" id="payrollDays">0</div>
+                                    </div>
+                                    <div class="payroll-item">
+                                        <div>Total a Pagar</div>
+                                        <div class="metric-value" id="payrollTotal">Q 0.00</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="table-container mt-3">
+                                <div class="table-responsive">
+                                    <table class="data-table" id="payrollTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Empleado</th>
+                                                <th>Puesto</th>
+                                                <th>Días Trabajados</th>
+                                                <th>Horas Extras</th>
+                                                <th>Salario Diario</th>
+                                                <th>Subtotal</th>
+                                                <th>Descuentos</th>
+                                                <th>Total a Pagar</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Planilla cargada dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-3">
+                                <button class="btn btn-success" id="calculatePayrollBtn">
+                                    <i class="fas fa-calculator"></i> Calcular Planilla
+                                </button>
+                                <button class="btn btn-primary" id="exportPayrollBtn">
+                                    <i class="fas fa-file-export"></i> Exportar a Excel
+                                </button>
+                                <button class="btn btn-warning" id="printPayrollBtn">
+                                    <i class="fas fa-print"></i> Imprimir Planilla
+                                </button>
+                                <button class="btn btn-info" id="openPayrollModuleBtn">
+                                    <i class="fas fa-up-right-from-square"></i> Planillas Avanzadas
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pestaña de Seguimiento -->
+                    <div class="tab-pane" id="tracking-tab">
+                        <div class="form-section">
+                            <h3 class="section-title">Seguimiento en Tiempo Real</h3>
+                            
+                            <!-- Mapa de ubicación -->
+                            <div class="map-container map-container-small">
+                                <div class="map-placeholder">
+                                    <i class="fas fa-map-marked-alt"></i>
+                                    <h4>Mapa de Ubicación de Empleados</h4>
+                                    <p>En versión completa: Muestra ubicación en tiempo real</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Walkie Talkie -->
+                            <div class="walkie-talkie">
+                                <h4>Comunicación por Walkie-Talkie</h4>
+                                <p>Seleccione un empleado para comunicarse</p>
+                                
+                                <div style="margin: 1.5rem 0;">
+                                    <select id="walkieEmployee" class="form-control" style="max-width: 300px; margin: 0 auto;">
+                                        <option value="">Seleccionar empleado</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <button class="walkie-btn" id="callBtn">
+                                        <i class="fas fa-phone"></i>
+                                    </button>
+                                    <button class="walkie-btn" id="talkBtn">
+                                        <i class="fas fa-microphone"></i>
+                                    </button>
+                                    <button class="walkie-btn" id="endCallBtn">
+                                        <i class="fas fa-phone-slash"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="mt-3" id="callStatus">
+                                    <p>Seleccione un empleado para iniciar comunicación</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Lista de empleados en sitio -->
+                            <div class="table-container mt-3">
+                                <div class="table-responsive">
+                                    <table class="data-table" id="trackingTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Empleado</th>
+                                                <th>Puesto</th>
+                                                <th>Proyecto</th>
+                                                <th>Estado</th>
+                                                <th>Última Actualización</th>
+                                                <th>Ubicación</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Seguimiento cargado dinámicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pestaña de Nuevo Contrato -->
+                    <div class="tab-pane" id="new-contract-tab">
+                        <div class="form-section">
+                            <h3 class="section-title">Nuevo Contrato de Trabajo</h3>
+                            
+                            <div class="contract-form">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="contractProject">Proyecto *</label>
+                                        <select id="contractProject">
+                                            <option value="">Seleccionar proyecto</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="contractPosition">Puesto *</label>
+                                        <select id="contractPosition">
+                                            <option value="">Seleccionar puesto</option>
+                                            <option value="supervisor" data-salary="250">Supervisor (Q 250.00/día)</option>
+                                            <option value="encargado" data-salary="250">Encargado (Q 250.00/día)</option>
+                                            <option value="maestro" data-salary="200">Maestro de Obras (Q 200.00/día)</option>
+                                            <option value="albañil" data-salary="175">Albañil (Q 175.00/día)</option>
+                                            <option value="ayudante" data-salary="125">Ayudante (Q 125.00/día)</option>
+                                            <option value="peon" data-salary="100">Peón (Q 100.00/día)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="contractSalary">Salario Diario (Q)</label>
+                                        <input type="number" id="contractSalary" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="contractVacancies">Vacantes Disponibles</label>
+                                        <input type="number" id="contractVacancies" min="1" value="1">
+                                    </div>
+                                </div>
+                                
+                                <h4 class="mt-4">Datos del Aspirante</h4>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="applicantName">Nombre Completo *</label>
+                                        <input type="text" id="applicantName" placeholder="Nombre completo del aspirante">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="applicantPhone">Teléfono *</label>
+                                        <input type="tel" id="applicantPhone" placeholder="Número de teléfono">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="applicantAddress">Dirección</label>
+                                        <input type="text" id="applicantAddress" placeholder="Dirección actual">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="applicantDPI">DPI/CUI *</label>
+                                        <input type="text" id="applicantDPI" placeholder="Número de DPI o CUI">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="applicantExperience">Experiencia (años)</label>
+                                        <input type="number" id="applicantExperience" min="0" step="0.5" placeholder="Años de experiencia">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="applicantReference1">Referencia 1</label>
+                                        <input type="text" id="applicantReference1" placeholder="Empresa donde trabajó">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="applicantReference2">Referencia 2</label>
+                                        <input type="text" id="applicantReference2" placeholder="Otra referencia">
+                                    </div>
+                                </div>
+                                
+                                <!-- Términos y condiciones -->
+                                <div class="mt-4">
+                                    <h4>Términos del Contrato</h4>
+                                    <div class="biometric-data">
+                                        <p><strong>Horario de Trabajo:</strong></p>
+                                        <ul>
+                                            <li>Entrada: 7:00 AM</li>
+                                            <li>Receso: 9:00 AM - 9:30 AM</li>
+                                            <li>Almuerzo: 12:00 PM - 1:00 PM</li>
+                                            <li>Salida: 4:00 PM</li>
+                                        </ul>
+                                        <p><strong>Días Laborales:</strong> Lunes a Sábado (medio día los sábados)</p>
+                                        <p><strong>Horas Extra:</strong> A solicitud del supervisor o administrador</p>
+                                        <p><strong>Días Festivos:</strong> A solicitud por atrasos en obra</p>
+                                    </div>
+                                    
+                                    <div class="form-check mt-3">
+                                        <input type="checkbox" id="acceptTerms" class="form-check-input">
+                                        <label for="acceptTerms" class="form-check-label">
+                                            Acepto los términos y condiciones del contrato, incluyendo el horario de trabajo y las responsabilidades asignadas.
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Firma -->
+                                <div class="mt-4">
+                                    <h4>Firma del Contrato</h4>
+                                    <div class="signature-pad" id="signaturePad">
+                                        <p id="signaturePlaceholder">Haga clic aquí para firmar</p>
+                                        <canvas id="signatureCanvas" style="display: none;"></canvas>
+                                    </div>
+                                    <div class="text-right mt-2">
+                                        <button class="btn btn-secondary btn-small" id="clearSignatureBtn">
+                                            <i class="fas fa-eraser"></i> Limpiar Firma
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Selfie -->
+                                <div class="mt-4">
+                                    <h4>Foto del Aspirante</h4>
+                                    <div class="signature-pad" id="selfiePad">
+                                        <p id="selfiePlaceholder">Área para selfie del aspirante</p>
+                                        <video id="selfieVideo" style="display: none; width: 100%; height: 100%; border-radius: var(--radius);"></video>
+                                        <canvas id="selfieCanvas" style="display: none;"></canvas>
+                                        <img id="selfieImage" style="display: none; width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius);">
+                                    </div>
+                                    <div class="text-center mt-2">
+                                        <button class="btn btn-secondary btn-small" id="takeSelfieBtn">
+                                            <i class="fas fa-camera"></i> Tomar Selfie
+                                        </button>
+                                        <button class="btn btn-secondary btn-small" id="retakeSelfieBtn" style="display: none;">
+                                            <i class="fas fa-redo"></i> Volver a Tomar
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Botones de acción -->
+                                <div class="text-center mt-4">
+                                    <button class="btn btn-secondary" id="cancelContractBtn">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </button>
+                                    <button class="btn btn-success" id="saveContractBtn">
+                                        <i class="fas fa-save"></i> Guardar Contrato
+                                    </button>
+                                    <button class="btn btn-primary" id="sendContractBtn">
+                                        <i class="fab fa-whatsapp"></i> Enviar al Aspirante
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navegación -->
+            <div class="navigation">
+                <a href="inicio.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="nav-title">INICIO</div>
+                    <div class="nav-desc">Registro de ingresos/gastos</div>
+                </a>
+
+                <a href="proyectos.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="nav-title">PROYECTOS</div>
+                    <div class="nav-desc">Gestión de proyectos</div>
+                </a>
+
+                <a href="compras.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="nav-title">COMPRAS</div>
+                    <div class="nav-desc">Gestión de compras</div>
+                </a>
+
+                <a href="seguimiento.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="nav-title">SEGUIMIENTO</div>
+                    <div class="nav-desc">Control físico y financiero</div>
+                </a>
+
+                <a href="dashboard.html" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="nav-title">DASHBOARD</div>
+                    <div class="nav-desc">Tablero principal</div>
+                </a>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <button class="btn btn-secondary btn-small" id="exportHRBtn">
+                        <i class="fas fa-file-export"></i> Exportar
+                    </button>
+                    <button class="btn btn-primary btn-small" id="syncHRBtn">
+                        <i class="fas fa-sync-alt"></i> Sincronizar
+                    </button>
+                    <button class="btn btn-success btn-small" id="printContractBtn">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                </div>
+                <div class="copyright">
+                    © 2024 CONSTRUCTORA WM/M&S - "EDIFICANDO EL FUTURO"
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal para empleados -->
+    <div class="modal" id="employeeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="employeeModalTitle">Nuevo Empleado</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="employeeName">Nombre Completo *</label>
+                        <input type="text" id="employeeName" placeholder="Nombre completo">
+                    </div>
+                    <div class="form-group">
+                        <label for="employeeDPI">DPI/CUI *</label>
+                        <input type="text" id="employeeDPI" placeholder="Número de DPI o CUI">
+                    </div>
+                    <div class="form-group">
+                        <label for="employeePhone">Teléfono *</label>
+                        <input type="tel" id="employeePhone" placeholder="Número de teléfono">
+                    </div>
+                    <div class="form-group">
+                        <label for="employeeAddress">Dirección</label>
+                        <input type="text" id="employeeAddress" placeholder="Dirección actual">
+                    </div>
+                    <div class="form-group">
+                        <label for="employeeEmail">Email</label>
+                        <input type="email" id="employeeEmail" placeholder="correo@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="employeePosition">Puesto</label>
+                        <select id="employeePosition">
+                            <option value="">Seleccionar puesto</option>
+                            <option value="supervisor">Supervisor</option>
+                            <option value="encargado">Encargado</option>
+                            <option value="maestro">Maestro de Obras</option>
+                            <option value="albañil">Albañil</option>
+                            <option value="ayudante">Ayudante</option>
+                            <option value="peon">Peón</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="employeeSalary">Salario Diario (Q)</label>
+                        <input type="number" id="employeeSalary" step="0.01" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="employeeStatus">Estado</label>
+                        <select id="employeeStatus">
+                            <option value="active">Activo</option>
+                            <option value="inactive">Inactivo</option>
+                            <option value="terminated">Terminado</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="employeeNotes">Notas</label>
+                        <textarea id="employeeNotes" rows="3" placeholder="Observaciones sobre el empleado"></textarea>
+                    </div>
+                </div>
+                <div class="text-right mt-3">
+                    <button class="btn btn-secondary" id="cancelEmployeeBtn">Cancelar</button>
+                    <button class="btn btn-success" id="saveEmployeeBtn">Guardar Empleado</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/database.js"></script>
+    <script>
+        // Variables globales
+        let employeesData = [];
+        let contractsData = [];
+        let attendanceData = [];
+        let payrollData = [];
+        let projectsData = [];
+        let editingEmployeeId = null;
+        let isDrawing = false;
+        let isSelfieTaken = false;
+        let signatureCanvas, signatureCtx;
+        let selfieCanvas, selfieCtx, selfieVideo;
+        
+        // Datos iniciales de ejemplo
+        const POSITION_SALARIES = {
+            'supervisor': 250.00,
+            'encargado': 250.00,
+            'maestro': 200.00,
+            'albañil': 175.00,
+            'ayudante': 125.00,
+            'peon': 100.00
+        };
+        
+        const POSITION_NAMES = {
+            'supervisor': 'Supervisor',
+            'encargado': 'Encargado',
+            'maestro': 'Maestro de Obras',
+            'albañil': 'Albañil',
+            'ayudante': 'Ayudante',
+            'peon': 'Peón'
+        };
+        
+        // Actualizar fecha y hora
+        function updateDateTime() {
+            const now = new Date();
+            const dateTimeStr = now.toLocaleDateString('es-GT', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('currentDateTime').textContent = dateTimeStr;
+            
+            // Establecer fecha por defecto para asistencia
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateFilter').value = today;
+            document.getElementById('attendanceDate').value = today;
+        }
+        
+        // Cargar datos iniciales
+        function loadInitialData() {
+            // Cargar datos de la base de datos local
+            employeesData = localDB.findAll('ms_employees');
+            contractsData = localDB.findAll('ms_contracts');
+            attendanceData = localDB.findAll('ms_attendance');
+            payrollData = localDB.findAll('ms_payroll');
+            projectsData = localDB.findAll('ms_projects');
+            
+            // Inicializar filtros
+            loadFilters();
+            
+            // Calcular métricas
+            calculateMetrics();
+            
+            // Cargar vistas iniciales
+            loadEmployees();
+            loadContractsTable();
+            loadAttendanceTable();
+            loadPayrollTable();
+            loadTrackingTable();
+            initializeNewContract();
+            
+            // Inicializar canvas de firma
+            initializeSignaturePad();
+            initializeSelfieCamera();
+        }
+        
+        // Cargar filtros
+        function loadFilters() {
+            const projectFilter = document.getElementById('projectFilter');
+            const contractProject = document.getElementById('contractProject');
+            const walkieEmployee = document.getElementById('walkieEmployee');
+            
+            // Proyectos
+            projectsData.forEach(project => {
+                if (project.status === 'active') {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = project.name;
+                    projectFilter.appendChild(option.cloneNode(true));
+                    contractProject.appendChild(option.cloneNode(true));
+                }
+            });
+            
+            // Empleados para walkie-talkie
+            employeesData.forEach(employee => {
+                if (employee.status === 'active') {
+                    const option = document.createElement('option');
+                    option.value = employee.id;
+                    option.textContent = `${employee.name} (${POSITION_NAMES[employee.position] || employee.position})`;
+                    walkieEmployee.appendChild(option);
+                }
+            });
+        }
+        
+        // Calcular métricas
+        function calculateMetrics() {
+            // Empleados activos
+            const activeEmployees = employeesData.filter(e => e.status === 'active').length;
+            document.getElementById('activeEmployees').textContent = activeEmployees;
+            
+            // Asistencia de hoy
+            const today = new Date().toISOString().split('T')[0];
+            const todayAttendance = attendanceData.filter(a => a.date === today);
+            const presentCount = todayAttendance.filter(a => a.status === 'present').length;
+            const attendancePercentage = todayAttendance.length > 0 ? (presentCount / todayAttendance.length) * 100 : 0;
+            
+            document.getElementById('todayAttendance').textContent = `${attendancePercentage.toFixed(0)}%`;
+            document.getElementById('presentCount').textContent = presentCount;
+            
+            // Planilla semanal
+            const weeklyPayroll = calculateWeeklyPayroll();
+            document.getElementById('weeklyPayroll').textContent = `Q ${weeklyPayroll.toFixed(2)}`;
+            
+            // Vacantes (simulado)
+            const openPositions = contractsData.filter(c => c.status === 'pending').length;
+            document.getElementById('openPositions').textContent = openPositions;
+        }
+        
+        // Calcular planilla semanal
+        function calculateWeeklyPayroll() {
+            // Obtener la semana actual
+            const today = new Date();
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay()); // Domingo
+            const endOfWeek = new Date(today);
+            endOfWeek.setDate(today.getDate() + (6 - today.getDay())); // Sábado
+            
+            // Filtrar asistencia de esta semana
+            const weekAttendance = attendanceData.filter(a => {
+                const attendanceDate = new Date(a.date);
+                return attendanceDate >= startOfWeek && attendanceDate <= endOfWeek;
+            });
+            
+            // Calcular total
+            let totalPayroll = 0;
+            
+            weekAttendance.forEach(record => {
+                const employee = employeesData.find(e => e.id === record.employeeId);
+                if (employee && record.status === 'present') {
+                    const dailySalary = employee.salary || POSITION_SALARIES[employee.position] || 0;
+                    
+                    // Calcular horas trabajadas
+                    let hoursWorked = 8; // Día completo por defecto
+                    if (record.checkIn && record.checkOut) {
+                        const checkInTime = new Date(`${record.date}T${record.checkIn}`);
+                        const checkOutTime = new Date(`${record.date}T${record.checkOut}`);
+                        hoursWorked = (checkOutTime - checkInTime) / (1000 * 60 * 60);
+                        hoursWorked = Math.max(0, Math.min(12, hoursWorked)); // Limitar a 12 horas
+                    }
+                    
+                    // Calcular pago (proporcional si fue medio día)
+                    const dailyPayment = dailySalary * (hoursWorked / 8);
+                    totalPayroll += dailyPayment;
+                }
+            });
+            
+            return totalPayroll;
+        }
+        
+        // Cargar empleados
+        function loadEmployees() {
+            const employeesList = document.getElementById('employeesList');
+            const projectFilter = document.getElementById('projectFilter').value;
+            const positionFilter = document.getElementById('positionFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            employeesList.innerHTML = '';
+            
+            employeesData.forEach(employee => {
+                // Aplicar filtros
+                if (positionFilter && employee.position !== positionFilter) return;
+                if (statusFilter && employee.status !== statusFilter) return;
+                
+                // Filtrar por proyecto (a través de contratos)
+                if (projectFilter && projectFilter !== 'all_active') {
+                    const employeeContracts = contractsData.filter(c => c.employeeId === employee.id);
+                    const hasProjectContract = employeeContracts.some(c => c.projectId === projectFilter);
+                    if (!hasProjectContract) return;
+                }
+                
+                const employeeCard = document.createElement('div');
+                employeeCard.className = 'employee-card';
+                
+                // Obtener contratos del empleado
+                const employeeContracts = contractsData.filter(c => c.employeeId === employee.id);
+                const currentContract = employeeContracts.find(c => c.status === 'active');
+                const currentProject = currentContract ? 
+                    projectsData.find(p => p.id === currentContract.projectId) : null;
+                
+                employeeCard.innerHTML = `
+                    <div class="employee-header">
+                        <div>
+                            <div class="employee-name">${employee.name}</div>
+                            <div class="employee-id">DPI: ${employee.dpi || 'No registrado'}</div>
+                        </div>
+                        <div class="employee-status ${employee.status}">
+                            ${employee.status === 'active' ? 'Activo' : 
+                              employee.status === 'inactive' ? 'Inactivo' : 'Terminado'}
+                        </div>
+                    </div>
+                    
+                    <div class="employee-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Puesto:</span>
+                            <span class="detail-value">
+                                <span class="position-badge">${POSITION_NAMES[employee.position] || employee.position}</span>
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Teléfono:</span>
+                            <span class="detail-value">${employee.phone || 'No registrado'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Salario Diario:</span>
+                            <span class="detail-value">Q ${employee.salary ? employee.salary.toFixed(2) : '0.00'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Proyecto Actual:</span>
+                            <span class="detail-value">${currentProject ? currentProject.name : 'Sin asignar'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="text-right mt-2">
+                        <button class="btn btn-small btn-secondary" onclick="editEmployee('${employee.id}')">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button class="btn btn-small btn-info" onclick="viewEmployeeDetails('${employee.id}')">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
+                        <button class="btn btn-small btn-success" onclick="markAttendance('${employee.id}')">
+                            <i class="fas fa-check-circle"></i> Asistencia
+                        </button>
+                        ${employee.status === 'active' ? 
+                            `<button class="btn btn-small btn-danger" onclick="terminateEmployee('${employee.id}')">
+                                <i class="fas fa-user-times"></i> Terminar
+                            </button>` : ''
+                        }
+                    </div>
+                `;
+                
+                employeesList.appendChild(employeeCard);
+            });
+            
+            if (employeesList.children.length === 0) {
+                employeesList.innerHTML = '<div class="alert alert-info">No se encontraron empleados con los filtros actuales</div>';
+            }
+        }
+        
+        // Cargar tabla de contratos
+        function loadContractsTable() {
+            const tableBody = document.querySelector('#contractsTable tbody');
+            const projectFilter = document.getElementById('projectFilter').value;
+            
+            tableBody.innerHTML = '';
+            
+            contractsData.forEach(contract => {
+                // Aplicar filtro de proyecto
+                if (projectFilter && projectFilter !== 'all_active' && contract.projectId !== projectFilter) return;
+                
+                const employee = employeesData.find(e => e.id === contract.employeeId);
+                const project = projectsData.find(p => p.id === contract.projectId);
+                
+                if (!employee) return;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${employee.name}</td>
+                    <td>${employee.dpi || 'N/A'}</td>
+                    <td>
+                        <span class="position-badge">${POSITION_NAMES[contract.position] || contract.position}</span>
+                    </td>
+                    <td>${project ? project.name : 'N/A'}</td>
+                    <td>Q ${contract.salary ? contract.salary.toFixed(2) : '0.00'}</td>
+                    <td>${contract.startDate ? formatDate(contract.startDate) : 'N/A'}</td>
+                    <td>${contract.endDate ? formatDate(contract.endDate) : 'Indefinido'}</td>
+                    <td>
+                        <span class="employee-status ${contract.status}">
+                            ${contract.status === 'active' ? 'Activo' : 
+                              contract.status === 'pending' ? 'Pendiente' : 
+                              contract.status === 'terminated' ? 'Terminado' : contract.status}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <button class="btn btn-small btn-info" onclick="viewContractDetails('${contract.id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        ${contract.status === 'active' ? 
+                            `<button class="btn btn-small btn-danger" onclick="terminateContract('${contract.id}')">
+                                <i class="fas fa-times"></i>
+                            </button>` : ''
+                        }
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Cargar tabla de asistencia
+        function loadAttendanceTable() {
+            const tableBody = document.querySelector('#attendanceTable tbody');
+            const attendanceDate = document.getElementById('attendanceDate').value;
+            const projectFilter = document.getElementById('projectFilter').value;
+            
+            tableBody.innerHTML = '';
+            
+            // Filtrar asistencia por fecha
+            const dateAttendance = attendanceData.filter(a => a.date === attendanceDate);
+            
+            if (dateAttendance.length === 0) {
+                // Mostrar empleados activos sin registro
+                const activeEmployees = employeesData.filter(e => e.status === 'active');
+                activeEmployees.forEach(employee => {
+                    // Filtrar por proyecto si está especificado
+                    if (projectFilter && projectFilter !== 'all_active') {
+                        const employeeContracts = contractsData.filter(c => c.employeeId === employee.id);
+                        const hasProjectContract = employeeContracts.some(c => c.projectId === projectFilter);
+                        if (!hasProjectContract) return;
+                    }
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${employee.name}</td>
+                        <td>${POSITION_NAMES[employee.position] || employee.position}</td>
+                        <td>${getEmployeeProject(employee.id)}</td>
+                        <td>--:--</td>
+                        <td>--:--</td>
+                        <td>0.0</td>
+                        <td>
+                            <span class="attendance-status absent"></span>
+                            <span>No registrado</span>
+                        </td>
+                        <td>No disponible</td>
+                        <td class="actions">
+                            <button class="btn btn-small btn-success" onclick="markAttendance('${employee.id}', 'present')">
+                                <i class="fas fa-check"></i> Presente
+                            </button>
+                            <button class="btn btn-small btn-danger" onclick="markAttendance('${employee.id}', 'absent')">
+                                <i class="fas fa-times"></i> Ausente
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } else {
+                // Mostrar registros existentes
+                dateAttendance.forEach(record => {
+                    const employee = employeesData.find(e => e.id === record.employeeId);
+                    if (!employee) return;
+                    
+                    // Filtrar por proyecto si está especificado
+                    if (projectFilter && projectFilter !== 'all_active') {
+                        const employeeContracts = contractsData.filter(c => c.employeeId === employee.id);
+                        const hasProjectContract = employeeContracts.some(c => c.projectId === projectFilter);
+                        if (!hasProjectContract) return;
+                    }
+                    
+                    const hoursWorked = record.hoursWorked || 0;
+                    const statusClass = record.status === 'present' ? 'present' : 
+                                       record.status === 'absent' ? 'absent' : 
+                                       record.status === 'late' ? 'late' : 'half-day';
+                    const statusText = record.status === 'present' ? 'Presente' : 
+                                      record.status === 'absent' ? 'Ausente' : 
+                                      record.status === 'late' ? 'Tardío' : 'Medio día';
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${employee.name}</td>
+                        <td>${POSITION_NAMES[employee.position] || employee.position}</td>
+                        <td>${getEmployeeProject(employee.id)}</td>
+                        <td>${record.checkIn || '--:--'}</td>
+                        <td>${record.checkOut || '--:--'}</td>
+                        <td>${hoursWorked.toFixed(1)}</td>
+                        <td>
+                            <span class="attendance-status ${statusClass}"></span>
+                            <span>${statusText}</span>
+                        </td>
+                        <td>
+                            ${record.location ? 
+                                `<span class="gps-indicator">
+                                    <i class="fas fa-map-marker-alt"></i> En obra
+                                </span>` : 
+                                'No disponible'
+                            }
+                        </td>
+                        <td class="actions">
+                            <button class="btn btn-small btn-info" onclick="editAttendance('${record.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-small btn-danger" onclick="deleteAttendance('${record.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+        
+        // Obtener proyecto del empleado
+        function getEmployeeProject(employeeId) {
+            const activeContract = contractsData.find(c => 
+                c.employeeId === employeeId && c.status === 'active'
+            );
+            
+            if (activeContract) {
+                const project = projectsData.find(p => p.id === activeContract.projectId);
+                return project ? project.name : 'Sin proyecto';
+            }
+            
+            return 'Sin proyecto';
+        }
+        
+        // Marcar asistencia
+        function markAttendance(employeeId, status = 'present') {
+            const attendanceDate = document.getElementById('attendanceDate').value;
+            const employee = employeesData.find(e => e.id === employeeId);
+            
+            if (!employee) {
+                alert('Empleado no encontrado');
+                return;
+            }
+            
+            const currentTime = new Date().toLocaleTimeString('es-GT', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            const attendanceData = {
+                employeeId: employeeId,
+                date: attendanceDate,
+                status: status,
+                checkIn: status === 'present' ? currentTime : null,
+                checkOut: null,
+                hoursWorked: status === 'present' ? 8 : 0, // Valor por defecto
+                location: status === 'present' ? 'En obra' : null,
+                notes: status === 'absent' ? 'Ausente sin justificación' : '',
+                createdAt: new Date().toISOString()
+            };
+            
+            localDB.save('ms_attendance', attendanceData);
+            attendanceData = localDB.findAll('ms_attendance');
+            
+            alert(`Asistencia registrada: ${employee.name} - ${status === 'present' ? 'Presente' : 'Ausente'}`);
+            
+            // Actualizar tabla
+            loadAttendanceTable();
+            calculateMetrics();
+        }
+        
+        // Cargar tabla de planilla
+        function loadPayrollTable() {
+            const tableBody = document.querySelector('#payrollTable tbody');
+            tableBody.innerHTML = '';
+            
+            // Calcular período actual (esta semana)
+            const today = new Date();
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay());
+            const endOfWeek = new Date(today);
+            endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
+            
+            document.getElementById('payrollPeriod').textContent = 
+                `Semana ${getWeekNumber(today)} (${formatDate(startOfWeek)} - ${formatDate(endOfWeek)})`;
+            
+            // Agrupar asistencia por empleado
+            const employeePayments = {};
+            
+            attendanceData.forEach(record => {
+                const recordDate = new Date(record.date);
+                if (recordDate >= startOfWeek && recordDate <= endOfWeek && record.status === 'present') {
+                    if (!employeePayments[record.employeeId]) {
+                        employeePayments[record.employeeId] = {
+                            days: 0,
+                            hours: 0,
+                            extraHours: 0
+                        };
+                    }
+                    
+                    employeePayments[record.employeeId].days++;
+                    employeePayments[record.employeeId].hours += record.hoursWorked || 8;
+                    
+                    // Calcular horas extras (más de 8 horas)
+                    if (record.hoursWorked > 8) {
+                        employeePayments[record.employeeId].extraHours += record.hoursWorked - 8;
+                    }
+                }
+            });
+            
+            let totalEmployees = 0;
+            let totalDays = 0;
+            let totalPayment = 0;
+            
+            // Calcular pagos
+            Object.keys(employeePayments).forEach(employeeId => {
+                const employee = employeesData.find(e => e.id === employeeId);
+                if (!employee) return;
+                
+                const payment = employeePayments[employeeId];
+                const dailySalary = employee.salary || POSITION_SALARIES[employee.position] || 0;
+                
+                // Calcular pago base
+                let basePayment = dailySalary * payment.days;
+                
+                // Calcular horas extras (50% más)
+                let extraPayment = 0;
+                if (payment.extraHours > 0) {
+                    const hourlyRate = dailySalary / 8;
+                    extraPayment = payment.extraHours * hourlyRate * 1.5;
+                }
+                
+                // Calcular subtotal
+                const subtotal = basePayment + extraPayment;
+                
+                // Descuentos (simulado)
+                const discounts = subtotal * 0.05; // 5% de descuentos
+                
+                // Total a pagar
+                const totalToPay = subtotal - discounts;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${employee.name}</td>
+                    <td>${POSITION_NAMES[employee.position] || employee.position}</td>
+                    <td>${payment.days}</td>
+                    <td>${payment.extraHours.toFixed(1)}</td>
+                    <td>Q ${dailySalary.toFixed(2)}</td>
+                    <td>Q ${subtotal.toFixed(2)}</td>
+                    <td>Q ${discounts.toFixed(2)}</td>
+                    <td><strong>Q ${totalToPay.toFixed(2)}</strong></td>
+                    <td class="actions">
+                        <button class="btn btn-small btn-info" onclick="viewPayrollDetails('${employeeId}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+                
+                totalEmployees++;
+                totalDays += payment.days;
+                totalPayment += totalToPay;
+            });
+            
+            // Actualizar resumen
+            document.getElementById('payrollEmployees').textContent = totalEmployees;
+            document.getElementById('payrollDays').textContent = totalDays;
+            document.getElementById('payrollTotal').textContent = `Q ${totalPayment.toFixed(2)}`;
+        }
+        
+        // Obtener número de semana
+        function getWeekNumber(date) {
+            const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+            const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+            return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+        }
+        
+        // Cargar tabla de seguimiento
+        function loadTrackingTable() {
+            const tableBody = document.querySelector('#trackingTable tbody');
+            tableBody.innerHTML = '';
+            
+            const activeEmployees = employeesData.filter(e => e.status === 'active');
+            
+            activeEmployees.forEach(employee => {
+                // Obtener última asistencia
+                const lastAttendance = attendanceData
+                    .filter(a => a.employeeId === employee.id && a.status === 'present')
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${employee.name}</td>
+                    <td>${POSITION_NAMES[employee.position] || employee.position}</td>
+                    <td>${getEmployeeProject(employee.id)}</td>
+                    <td>
+                        ${lastAttendance ? 
+                            `<span class="employee-status active">En obra</span>` : 
+                            `<span class="employee-status inactive">Sin registro</span>`
+                        }
+                    </td>
+                    <td>${lastAttendance ? formatDateTime(lastAttendance.updatedAt || lastAttendance.createdAt) : 'N/A'}</td>
+                    <td>
+                        ${lastAttendance && lastAttendance.location ? 
+                            `<span class="gps-indicator">
+                                <i class="fas fa-map-marker-alt"></i> ${lastAttendance.location}
+                            </span>` : 
+                            `<span class="gps-indicator inactive">
+                                <i class="fas fa-map-marker-alt-slash"></i> No disponible
+                            </span>`
+                        }
+                    </td>
+                    <td class="actions">
+                        <button class="btn btn-small btn-primary" onclick="startCall('${employee.id}')">
+                            <i class="fas fa-phone"></i> Llamar
+                        </button>
+                        <button class="btn btn-small btn-success" onclick="sendMessage('${employee.id}')">
+                            <i class="fas fa-comment"></i> Mensaje
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Inicializar nuevo contrato
+        function initializeNewContract() {
+            // Actualizar salario según puesto seleccionado
+            document.getElementById('contractPosition').addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const salary = selectedOption.dataset.salary || '0';
+                document.getElementById('contractSalary').value = salary;
+            });
+            
+            // Inicializar fecha de hoy
+            const today = new Date().toISOString().split('T')[0];
+            // No hay campo de fecha en el formulario, pero se podría agregar
+        }
+        
+        // Inicializar pad de firma
+        function initializeSignaturePad() {
+            signatureCanvas = document.getElementById('signatureCanvas');
+            signatureCtx = signatureCanvas.getContext('2d');
+            
+            // Configurar canvas
+            const rect = signatureCanvas.getBoundingClientRect();
+            signatureCanvas.width = rect.width;
+            signatureCanvas.height = rect.height;
+            
+            signatureCtx.lineWidth = 2;
+            signatureCtx.lineCap = 'round';
+            signatureCtx.lineJoin = 'round';
+            signatureCtx.strokeStyle = '#000';
+            
+            // Event listeners para dibujar
+            signatureCanvas.addEventListener('mousedown', startDrawing);
+            signatureCanvas.addEventListener('mousemove', draw);
+            signatureCanvas.addEventListener('mouseup', stopDrawing);
+            signatureCanvas.addEventListener('mouseout', stopDrawing);
+            
+            // Para dispositivos táctiles
+            signatureCanvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousedown', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                signatureCanvas.dispatchEvent(mouseEvent);
+            });
+            
+            signatureCanvas.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousemove', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                signatureCanvas.dispatchEvent(mouseEvent);
+            });
+            
+            signatureCanvas.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                const mouseEvent = new MouseEvent('mouseup');
+                signatureCanvas.dispatchEvent(mouseEvent);
+            });
+            
+            // Mostrar/ocultar canvas
+            document.getElementById('signaturePad').addEventListener('click', function() {
+                document.getElementById('signaturePlaceholder').style.display = 'none';
+                signatureCanvas.style.display = 'block';
+            });
+        }
+        
+        // Funciones para dibujar firma
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = signatureCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            signatureCtx.beginPath();
+            signatureCtx.moveTo(x, y);
+        }
+        
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = signatureCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            signatureCtx.lineTo(x, y);
+            signatureCtx.stroke();
+        }
+        
+        function stopDrawing() {
+            isDrawing = false;
+            signatureCtx.closePath();
+        }
+        
+        // Limpiar firma
+        function clearSignature() {
+            signatureCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+        }
+        
+        // Inicializar cámara para selfie
+        function initializeSelfieCamera() {
+            selfieCanvas = document.getElementById('selfieCanvas');
+            selfieCtx = selfieCanvas.getContext('2d');
+            selfieVideo = document.getElementById('selfieVideo');
+            const selfieImage = document.getElementById('selfieImage');
+            
+            // Configurar canvas
+            const rect = selfieCanvas.getBoundingClientRect();
+            selfieCanvas.width = rect.width;
+            selfieCanvas.height = rect.height;
+            
+            // Botón para tomar selfie
+            document.getElementById('takeSelfieBtn').addEventListener('click', async function() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: 'user' } 
+                    });
+                    
+                    selfieVideo.srcObject = stream;
+                    selfieVideo.style.display = 'block';
+                    document.getElementById('selfiePlaceholder').style.display = 'none';
+                    selfieVideo.play();
+                    
+                    // Cambiar botones
+                    this.style.display = 'none';
+                    document.getElementById('retakeSelfieBtn').style.display = 'inline-block';
+                    
+                    // Tomar foto después de 2 segundos
+                    setTimeout(() => {
+                        selfieCtx.drawImage(selfieVideo, 0, 0, selfieCanvas.width, selfieCanvas.height);
+                        const imageData = selfieCanvas.toDataURL('image/png');
+                        selfieImage.src = imageData;
+                        selfieImage.style.display = 'block';
+                        selfieVideo.style.display = 'none';
+                        
+                        // Detener cámara
+                        stream.getTracks().forEach(track => track.stop());
+                        
+                        isSelfieTaken = true;
+                    }, 2000);
+                    
+                } catch (error) {
+                    alert('Error al acceder a la cámara: ' + error.message);
+                }
+            });
+            
+            // Botón para volver a tomar
+            document.getElementById('retakeSelfieBtn').addEventListener('click', function() {
+                selfieImage.style.display = 'none';
+                document.getElementById('selfiePlaceholder').style.display = 'block';
+                this.style.display = 'none';
+                document.getElementById('takeSelfieBtn').style.display = 'inline-block';
+                isSelfieTaken = false;
+            });
+        }
+        
+        // Guardar contrato
+        function saveContract() {
+            const projectId = document.getElementById('contractProject').value;
+            const position = document.getElementById('contractPosition').value;
+            const salary = parseFloat(document.getElementById('contractSalary').value) || 0;
+            const vacancies = parseInt(document.getElementById('contractVacancies').value) || 1;
+            
+            const applicantName = document.getElementById('applicantName').value;
+            const applicantPhone = document.getElementById('applicantPhone').value;
+            const applicantDPI = document.getElementById('applicantDPI').value;
+            const applicantExperience = parseFloat(document.getElementById('applicantExperience').value) || 0;
+            
+            const acceptTerms = document.getElementById('acceptTerms').checked;
+            
+            // Validaciones
+            if (!projectId || !position || !applicantName || !applicantPhone || !applicantDPI) {
+                alert('Por favor complete todos los campos obligatorios (*)');
+                return;
+            }
+            
+            if (!acceptTerms) {
+                alert('Debe aceptar los términos y condiciones del contrato');
+                return;
+            }
+            
+            // Verificar requisitos de experiencia
+            const experienceRequirements = {
+                'supervisor': 4,
+                'encargado': 4,
+                'maestro': 4,
+                'albañil': 4,
+                'ayudante': 0,
+                'peon': 0
+            };
+            
+            const requiredExperience = experienceRequirements[position] || 0;
+            if (applicantExperience < requiredExperience) {
+                alert(`Para el puesto de ${POSITION_NAMES[position]} se requiere al menos ${requiredExperience} años de experiencia`);
+                return;
+            }
+            
+            // Crear empleado
+            const employeeData = {
+                name: applicantName,
+                dpi: applicantDPI,
+                phone: applicantPhone,
+                address: document.getElementById('applicantAddress').value || '',
+                position: position,
+                salary: salary,
+                experience: applicantExperience,
+                status: 'pending',
+                reference1: document.getElementById('applicantReference1').value || '',
+                reference2: document.getElementById('applicantReference2').value || '',
+                createdAt: new Date().toISOString()
+            };
+            
+            const employee = localDB.save('ms_employees', employeeData);
+            employeesData = localDB.findAll('ms_employees');
+            
+            // Crear contrato
+            const today = new Date().toISOString().split('T')[0];
+            const endDate = new Date();
+            endDate.setFullYear(endDate.getFullYear() + 1); // Contrato por 1 año
+            
+            const contractData = {
+                employeeId: employee.id,
+                projectId: projectId,
+                position: position,
+                salary: salary,
+                startDate: today,
+                endDate: endDate.toISOString().split('T')[0],
+                status: 'pending',
+                termsAccepted: true,
+                signature: signatureCanvas.toDataURL(),
+                selfie: isSelfieTaken ? selfieCanvas.toDataURL() : null,
+                createdAt: new Date().toISOString()
+            };
+            
+            localDB.save('ms_contracts', contractData);
+            contractsData = localDB.findAll('ms_contracts');
+            
+            alert('Contrato guardado exitosamente. El empleado está pendiente de activación.');
+            
+            // Limpiar formulario
+            document.getElementById('contractProject').value = '';
+            document.getElementById('contractPosition').value = '';
+            document.getElementById('contractSalary').value = '';
+            document.getElementById('contractVacancies').value = '1';
+            document.getElementById('applicantName').value = '';
+            document.getElementById('applicantPhone').value = '';
+            document.getElementById('applicantAddress').value = '';
+            document.getElementById('applicantDPI').value = '';
+            document.getElementById('applicantExperience').value = '';
+            document.getElementById('applicantReference1').value = '';
+            document.getElementById('applicantReference2').value = '';
+            document.getElementById('acceptTerms').checked = false;
+            
+            clearSignature();
+            document.getElementById('selfieImage').style.display = 'none';
+            document.getElementById('selfiePlaceholder').style.display = 'block';
+            document.getElementById('retakeSelfieBtn').style.display = 'none';
+            document.getElementById('takeSelfieBtn').style.display = 'inline-block';
+            
+            // Actualizar vistas
+            loadEmployees();
+            loadContractsTable();
+            calculateMetrics();
+        }
+        
+        // Mostrar modal de empleado
+        function showEmployeeModal(employee = null) {
+            const modal = document.getElementById('employeeModal');
+            const title = document.getElementById('employeeModalTitle');
+            
+            if (employee) {
+                title.textContent = 'Editar Empleado';
+                editingEmployeeId = employee.id;
+                
+                // Llenar formulario
+                document.getElementById('employeeName').value = employee.name || '';
+                document.getElementById('employeeDPI').value = employee.dpi || '';
+                document.getElementById('employeePhone').value = employee.phone || '';
+                document.getElementById('employeeAddress').value = employee.address || '';
+                document.getElementById('employeeEmail').value = employee.email || '';
+                document.getElementById('employeePosition').value = employee.position || '';
+                document.getElementById('employeeSalary').value = employee.salary || '';
+                document.getElementById('employeeStatus').value = employee.status || 'active';
+                document.getElementById('employeeNotes').value = employee.notes || '';
+            } else {
+                title.textContent = 'Nuevo Empleado';
+                editingEmployeeId = null;
+                
+                // Limpiar formulario
+                document.getElementById('employeeName').value = '';
+                document.getElementById('employeeDPI').value = '';
+                document.getElementById('employeePhone').value = '';
+                document.getElementById('employeeAddress').value = '';
+                document.getElementById('employeeEmail').value = '';
+                document.getElementById('employeePosition').value = '';
+                document.getElementById('employeeSalary').value = '';
+                document.getElementById('employeeStatus').value = 'active';
+                document.getElementById('employeeNotes').value = '';
+            }
+            
+            modal.style.display = 'flex';
+        }
+        
+        // Guardar empleado
+        function saveEmployee() {
+            const employeeData = {
+                name: document.getElementById('employeeName').value,
+                dpi: document.getElementById('employeeDPI').value,
+                phone: document.getElementById('employeePhone').value,
+                address: document.getElementById('employeeAddress').value,
+                email: document.getElementById('employeeEmail').value,
+                position: document.getElementById('employeePosition').value,
+                salary: parseFloat(document.getElementById('employeeSalary').value) || 0,
+                status: document.getElementById('employeeStatus').value,
+                notes: document.getElementById('employeeNotes').value
+            };
+            
+            // Validaciones
+            if (!employeeData.name || !employeeData.dpi || !employeeData.phone) {
+                alert('Por favor complete los campos obligatorios (Nombre, DPI y Teléfono)');
+                return;
+            }
+            
+            // Guardar o actualizar
+            if (editingEmployeeId) {
+                employeeData.id = editingEmployeeId;
+                localDB.save('ms_employees', employeeData);
+                alert('Empleado actualizado exitosamente');
+            } else {
+                localDB.save('ms_employees', employeeData);
+                alert('Empleado creado exitosamente');
+            }
+            
+            // Cerrar modal y recargar datos
+            document.getElementById('employeeModal').style.display = 'none';
+            employeesData = localDB.findAll('ms_employees');
+            loadEmployees();
+            loadFilters();
+            calculateMetrics();
+        }
+        
+        // Formatear fecha
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-GT');
+        }
+        
+        // Formatear fecha y hora
+        function formatDateTime(dateTimeString) {
+            if (!dateTimeString) return 'N/A';
+            const date = new Date(dateTimeString);
+            return date.toLocaleString('es-GT', {
+                hour: '2-digit',
+                minute: '2-digit',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 60000);
+            
+            // Cargar datos iniciales
+            loadInitialData();
+            
+            // Event listeners para pestañas
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.dataset.tab;
+                    
+                    // Actualizar botones
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Actualizar contenido
+                    document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+            
+            // Event listeners generales
+            document.getElementById('addEmployeeBtn').addEventListener('click', () => showEmployeeModal());
+            document.getElementById('saveEmployeeBtn').addEventListener('click', saveEmployee);
+            document.getElementById('cancelEmployeeBtn').addEventListener('click', () => {
+                document.getElementById('employeeModal').style.display = 'none';
+            });
+            
+            document.getElementById('markAllPresentBtn').addEventListener('click', function() {
+                if (confirm('¿Marcar a todos los empleados como presentes?')) {
+                    const activeEmployees = employeesData.filter(e => e.status === 'active');
+                    activeEmployees.forEach(employee => {
+                        markAttendance(employee.id, 'present');
+                    });
+                }
+            });
+            
+            document.getElementById('calculatePayrollBtn').addEventListener('click', loadPayrollTable);
+            document.getElementById('exportPayrollBtn').addEventListener('click', function() {
+                alert('Exportación de planilla a Excel (en desarrollo)');
+            });
+            
+            document.getElementById('printPayrollBtn').addEventListener('click', function() {
+                alert('Impresión de planilla (en desarrollo)');
+            });
+
+            document.getElementById('openPayrollModuleBtn').addEventListener('click', function() {
+                const win = window.open('rrhh-planillas.html', '_blank');
+                if (win) {
+                    win.opener = null;
+                    return;
+                }
+                window.location.href = 'rrhh-planillas.html';
+            });
+            
+            document.getElementById('clearSignatureBtn').addEventListener('click', clearSignature);
+            document.getElementById('saveContractBtn').addEventListener('click', saveContract);
+            document.getElementById('cancelContractBtn').addEventListener('click', function() {
+                if (confirm('¿Cancelar el contrato en progreso?')) {
+                    // Limpiar formulario
+                    document.getElementById('contractProject').value = '';
+                    document.getElementById('contractPosition').value = '';
+                    document.getElementById('contractSalary').value = '';
+                    document.getElementById('contractVacancies').value = '1';
+                    document.getElementById('applicantName').value = '';
+                    document.getElementById('applicantPhone').value = '';
+                    document.getElementById('applicantAddress').value = '';
+                    document.getElementById('applicantDPI').value = '';
+                    document.getElementById('applicantExperience').value = '';
+                    document.getElementById('applicantReference1').value = '';
+                    document.getElementById('applicantReference2').value = '';
+                    document.getElementById('acceptTerms').checked = false;
+                    
+                    clearSignature();
+                    document.getElementById('selfieImage').style.display = 'none';
+                    document.getElementById('selfiePlaceholder').style.display = 'block';
+                    document.getElementById('retakeSelfieBtn').style.display = 'none';
+                    document.getElementById('takeSelfieBtn').style.display = 'inline-block';
+                }
+            });
+            
+            // Filtros
+            document.getElementById('projectFilter').addEventListener('change', function() {
+                loadEmployees();
+                loadContractsTable();
+                loadAttendanceTable();
+            });
+            
+            document.getElementById('positionFilter').addEventListener('change', loadEmployees);
+            document.getElementById('statusFilter').addEventListener('change', loadEmployees);
+            document.getElementById('attendanceDate').addEventListener('change', loadAttendanceTable);
+            
+            // Walkie-talkie
+            let isTalking = false;
+            document.getElementById('talkBtn').addEventListener('mousedown', function() {
+                isTalking = true;
+                this.classList.add('talking');
+                document.getElementById('callStatus').innerHTML = '<p><i class="fas fa-microphone"></i> Hablando...</p>';
+            });
+            
+            document.getElementById('talkBtn').addEventListener('mouseup', function() {
+                isTalking = false;
+                this.classList.remove('talking');
+                document.getElementById('callStatus').innerHTML = '<p>Presione y mantenga para hablar</p>';
+            });
+            
+            document.getElementById('callBtn').addEventListener('click', function() {
+                const employeeId = document.getElementById('walkieEmployee').value;
+                if (employeeId) {
+                    const employee = employeesData.find(e => e.id === employeeId);
+                    document.getElementById('callStatus').innerHTML = `
+                        <p><i class="fas fa-phone"></i> Llamando a ${employee.name}...</p>
+                        <p>Presione y mantenga el botón de micrófono para hablar</p>
+                    `;
+                } else {
+                    alert('Seleccione un empleado primero');
+                }
+            });
+            
+            document.getElementById('endCallBtn').addEventListener('click', function() {
+                document.getElementById('callStatus').innerHTML = '<p>Llamada terminada</p>';
+            });
+            
+            document.getElementById('exportHRBtn').addEventListener('click', function() {
+                alert('Exportación de datos de RRHH (en desarrollo)');
+            });
+            
+            document.getElementById('syncHRBtn').addEventListener('click', function() {
+                alert('Sincronización con la nube (en desarrollo)');
+            });
+            
+            document.getElementById('printContractBtn').addEventListener('click', function() {
+                alert('Impresión de contrato (en desarrollo)');
+            });
+            
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                if (confirm('¿Está seguro de que desea salir del sistema?')) {
+                    window.location.href = 'index.html';
+                }
+            });
+            
+            // Cerrar modales haciendo clic fuera
+            window.addEventListener('click', function(event) {
+                const employeeModal = document.getElementById('employeeModal');
+                if (event.target === employeeModal) {
+                    employeeModal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

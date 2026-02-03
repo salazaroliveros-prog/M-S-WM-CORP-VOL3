@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cotización Rápida - Constructora WM/M&S</title>
+    <link rel="stylesheet" href="estilos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --azul-marino: #1a237e;
+            --mostaza-oscuro: #d4a017;
+            --gris-oscuro: #333;
+            --blanco: #fff;
+            --verde: #4caf50;
+        }
+
+        .cotizacion-container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: var(--gris-oscuro);
+        }
+
+        .cotizacion-header {
+            background: linear-gradient(90deg, var(--azul-marino) 0%, #283593 100%);
+            color: var(--mostaza-oscuro);
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 3px solid var(--mostaza-oscuro);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .cotizacion-header h1 {
+            font-size: 1.8rem;
+            margin: 0;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .cotizacion-header .slogan {
+            font-size: 0.9rem;
+            color: #ffd54f;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--azul-marino);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--mostaza-oscuro);
+            box-shadow: 0 0 0 2px rgba(212, 160, 23, 0.2);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .service-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f9f9f9;
+        }
+
+        .service-card:hover {
+            border-color: var(--mostaza-oscuro);
+            background: #fff8e1;
+            transform: translateY(-3px);
+        }
+
+        .service-card.selected {
+            border-color: var(--azul-marino);
+            background: #e8eaf6;
+        }
+
+        .service-title {
+            font-weight: bold;
+            color: var(--azul-marino);
+            margin-bottom: 5px;
+        }
+
+        .service-price {
+            color: var(--mostaza-oscuro);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .service-description {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .quantity-control input {
+            width: 80px;
+            text-align: center;
+        }
+
+        .quantity-control button {
+            background: var(--azul-marino);
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .totals-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid var(--mostaza-oscuro);
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .grand-total {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--azul-marino);
+            border-top: 2px solid #ddd;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .preview-section {
+            background: white;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .preview-section.active {
+            display: block;
+        }
+
+        .preview-header {
+            text-align: center;
+            border-bottom: 2px solid var(--azul-marino);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .company-logo {
+            max-width: 150px;
+            margin: 0 auto 10px;
+            display: block;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .action-buttons button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="cotizacion-container">
+    <!-- Encabezado -->
+    <header class="cotizacion-header">
+        <h1>COTIZACIÓN RÁPIDA</h1>
+        <div class="slogan">CONSTRUCTORA WM/M&S - EDIFICANDO EL FUTURO</div>
+        <div style="margin-top: 10px; color: white; font-size: 0.9rem;">
+            <i class="fas fa-clock"></i> <span id="currentDateTime">Cargando...</span>
+        </div>
+    </header>
+
+    <!-- Formulario Principal -->
+    <div class="form-container">
+        <!-- Información del Cliente -->
+        <div class="form-group">
+            <h2 style="color: var(--azul-marino); border-bottom: 2px solid var(--mostaza-oscuro); padding-bottom: 5px;">
+                <i class="fas fa-user"></i> INFORMACIÓN DEL CLIENTE
+            </h2>
+        </div>
+
+        <div class="form-group">
+            <label for="clientName"><i class="fas fa-user-tie"></i> Nombre del Cliente *</label>
+            <input type="text" id="clientName" placeholder="Ingrese nombre completo" required>
+        </div>
+
+        <div class="form-group">
+            <label for="clientAddress"><i class="fas fa-map-marker-alt"></i> Dirección</label>
+            <input type="text" id="clientAddress" placeholder="Dirección del cliente">
+        </div>
+
+        <div class="form-group">
+            <label for="clientPhone"><i class="fas fa-phone"></i> Teléfono *</label>
+            <input type="tel" id="clientPhone" placeholder="Número de teléfono" required>
+        </div>
+
+        <div class="form-group">
+            <label for="clientEmail"><i class="fas fa-envelope"></i> Correo Electrónico</label>
+            <input type="email" id="clientEmail" placeholder="correo@ejemplo.com">
+        </div>
+
+        <!-- Servicios Disponibles -->
+        <div class="form-group">
+            <h2 style="color: var(--azul-marino); border-bottom: 2px solid var(--mostaza-oscuro); padding-bottom: 5px;">
+                <i class="fas fa-list-alt"></i> SERVICIOS DISPONIBLES
+            </h2>
+            <p style="color: #666; font-size: 0.9rem;">Seleccione los servicios requeridos:</p>
+        </div>
+
+        <div class="services-grid" id="servicesContainer">
+            <!-- Los servicios se cargarán dinámicamente -->
+        </div>
+
+        <!-- Totales -->
+        <div class="totals-section">
+            <div class="total-row">
+                <span>Subtotal:</span>
+                <span id="subtotalAmount">Q 0.00</span>
+            </div>
+            <div class="total-row">
+                <span>IVA (12%):</span>
+                <span id="ivaAmount">Q 0.00</span>
+            </div>
+            <div class="total-row grand-total">
+                <span>TOTAL:</span>
+                <span id="totalAmount">Q 0.00</span>
+            </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="calculateQuote()">
+                <i class="fas fa-calculator"></i> Calcular Cotización
+            </button>
+            <button class="btn btn-success" onclick="generatePDF()">
+                <i class="fas fa-file-pdf"></i> Generar PDF
+            </button>
+            <button class="btn btn-warning" onclick="sendWhatsApp()">
+                <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+            </button>
+            <button class="btn btn-secondary" onclick="saveQuote()">
+                <i class="fas fa-save"></i> Guardar Localmente
+            </button>
+            <button class="btn btn-danger" onclick="clearForm()">
+                <i class="fas fa-redo"></i> Limpiar Formulario
+            </button>
+            <button class="btn btn-info" onclick="goToDashboard()">
+                <i class="fas fa-home"></i> Ir al Dashboard
+            </button>
+        </div>
+
+        <!-- Vista Previa -->
+        <div class="preview-section" id="previewSection">
+            <div class="preview-header">
+                <img src="logo.png" alt="Logo M&S" class="company-logo" id="quoteLogo">
+                <h2 style="color: var(--azul-marino); margin: 10px 0 5px;">CONSTRUCTORA WM/M&S</h2>
+                <div style="color: var(--mostaza-oscuro); font-style: italic; margin-bottom: 10px;">EDIFICANDO EL FUTURO</div>
+                <div style="font-size: 0.9rem; color: #666;">
+                    Barrio el Centro Casco Urbano Quesada, Jutiapa<br>
+                    Tel: 55606172 | Email: multiserviciosdeguatemal@gmail.com
+                </div>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h3 style="color: var(--azul-marino);">COTIZACIÓN #<span id="quoteNumber">001</span></h3>
+                <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                    <div>
+                        <strong>Cliente:</strong> <span id="previewClientName">-</span><br>
+                        <strong>Dirección:</strong> <span id="previewClientAddress">-</span><br>
+                        <strong>Teléfono:</strong> <span id="previewClientPhone">-</span>
+                    </div>
+                    <div>
+                        <strong>Fecha:</strong> <span id="previewDate">-</span><br>
+                        <strong>Válido hasta:</strong> <span id="previewValidUntil">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <thead>
+                    <tr style="background: var(--azul-marino); color: white;">
+                        <th style="padding: 10px; text-align: left;">Descripción del Servicio</th>
+                        <th style="padding: 10px; text-align: center;">Cantidad</th>
+                        <th style="padding: 10px; text-align: right;">Precio Unitario</th>
+                        <th style="padding: 10px; text-align: right;">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody id="previewServicesTable">
+                    <!-- Los servicios se cargarán aquí -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" style="padding: 10px; text-align: right; font-weight: bold;">Subtotal:</td>
+                        <td style="padding: 10px; text-align: right;" id="previewSubtotal">Q 0.00</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" style="padding: 10px; text-align: right; font-weight: bold;">IVA (12%):</td>
+                        <td style="padding: 10px; text-align: right;" id="previewIVA">Q 0.00</td>
+                    </tr>
+                    <tr style="background: #f5f5f5;">
+                        <td colspan="3" style="padding: 10px; text-align: right; font-weight: bold; font-size: 1.1rem;">TOTAL:</td>
+                        <td style="padding: 10px; text-align: right; font-weight: bold; font-size: 1.1rem; color: var(--azul-marino);" id="previewTotal">Q 0.00</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div style="margin-top: 30px; padding: 15px; background: #f9f9f9; border-radius: 5px;">
+                <h4 style="color: var(--azul-marino); margin-bottom: 10px;">Términos y Condiciones:</h4>
+                <ul style="font-size: 0.9rem; color: #666;">
+                    <li>Esta cotización es válida por 30 días a partir de la fecha de emisión.</li>
+                    <li>Los precios incluyen materiales de calidad estándar.</li>
+                    <li>Para iniciar el trabajo se requiere un anticipo del 30%.</li>
+                    <li>El tiempo de entrega comienza una vez recibido el anticipo.</li>
+                    <li>Los precios no incluyen permisos municipales adicionales.</li>
+                </ul>
+            </div>
+
+            <div style="margin-top: 30px; text-align: center;">
+                <div style="display: inline-block; text-align: center; padding: 15px;">
+                    <div style="border-top: 1px solid #000; width: 200px; margin: 0 auto 10px;"></div>
+                    <strong>Firma del Cliente</strong><br>
+                    <span style="font-size: 0.9rem; color: #666;">Acepto los términos y condiciones</span>
+                </div>
+                <div style="display: inline-block; text-align: center; padding: 15px; margin-left: 50px;">
+                    <div style="border-top: 1px solid #000; width: 200px; margin: 0 auto 10px;"></div>
+                    <strong>Autorizado por</strong><br>
+                    <span style="font-size: 0.9rem; color: #666;">Constructora WM/M&S</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Definición de servicios
+        const services = [
+            {
+                id: 1,
+                name: "Planos de Registro",
+                description: "Elaboración de planos para registro municipal (1.00 m² a 7,000.00 m²)",
+                pricePerUnit: 400.00,
+                unit: "m²",
+                minArea: 1,
+                maxArea: 7000
+            },
+            {
+                id: 2,
+                name: "Anteproyecto (50-120 m² un nivel)",
+                description: "Diseño arquitectónico para vivienda de un nivel",
+                price: 3000.00,
+                unit: "proyecto",
+                fixedPrice: true
+            },
+            {
+                id: 3,
+                name: "Anteproyecto (120+ m² o varios niveles)",
+                description: "Diseño arquitectónico para proyectos más complejos",
+                price: 5000.00,
+                unit: "proyecto",
+                fixedPrice: true
+            },
+            {
+                id: 4,
+                name: "Avalúos de Bienes Inmuebles",
+                description: "Valoración profesional de propiedades",
+                pricePerUnit: 1.50,
+                unit: "m²"
+            },
+            {
+                id: 5,
+                name: "Topografía - Urbanizaciones",
+                description: "Levantamiento topográfico para urbanizaciones",
+                pricePerUnit: 2.00,
+                unit: "m²"
+            },
+            {
+                id: 6,
+                name: "Topografía - Replanteos",
+                description: "Replanteo en terreno",
+                pricePerUnit: 1.50,
+                unit: "m²"
+            },
+            {
+                id: 7,
+                name: "Topografía - Trazo de Calles/Drenajes",
+                description: "Trazo para infraestructura vial y sanitaria",
+                pricePerUnit: 4.50,
+                unit: "ml"
+            },
+            {
+                id: 8,
+                name: "Planificación Residencial",
+                description: "Planificación completa de proyecto residencial",
+                price: 8000.00,
+                unit: "proyecto",
+                fixedPrice: true
+            },
+            {
+                id: 9,
+                name: "Planificación Comercial/Industrial",
+                description: "Planificación de proyectos comerciales o industriales",
+                price: 50000.00,
+                unit: "proyecto",
+                fixedPrice: true
+            },
+            {
+                id: 10,
+                name: "Planificación Civil",
+                description: "Planificación de obras civiles",
+                price: 25000.00,
+                unit: "proyecto",
+                fixedPrice: true
+            },
+            {
+                id: 11,
+                name: "Planificación Pública",
+                description: "Planificación de obras públicas",
+                price: 15000.00,
+                unit: "proyecto",
+                fixedPrice: true
+            }
+        ];
+
+        // Cotización actual
+        let currentQuote = {
+            id: generateQuoteId(),
+            client: {},
+            services: [],
+            subtotal: 0,
+            iva: 0,
+            total: 0,
+            date: new Date(),
+            validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 días
+        };
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            loadServices();
+            loadSavedQuotes();
+        });
+
+        // Actualizar fecha y hora
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            document.getElementById('currentDateTime').textContent = now.toLocaleDateString('es-GT', options);
+        }
+
+        // Cargar servicios en la interfaz
+        function loadServices() {
+            const container = document.getElementById('servicesContainer');
+            container.innerHTML = '';
+            
+            services.forEach(service => {
+                const serviceCard = document.createElement('div');
+                serviceCard.className = 'service-card';
+                serviceCard.dataset.id = service.id;
+                serviceCard.onclick = () => toggleServiceSelection(service.id);
+                
+                serviceCard.innerHTML = `
+                    <div class="service-title">${service.name}</div>
+                    <div class="service-price">
+                        ${service.fixedPrice ? `Q ${service.price.toFixed(2)}` : `Q ${service.pricePerUnit.toFixed(2)} / ${service.unit}`}
+                    </div>
+                    <div class="service-description">${service.description}</div>
+                    ${!service.fixedPrice ? `
+                        <div class="quantity-control">
+                            <button onclick="decreaseQuantity(${service.id}, event)">-</button>
+                            <input type="number" id="qty_${service.id}" 
+                                   min="${service.minArea || 1}" 
+                                   max="${service.maxArea || 999999}" 
+                                   value="0" 
+                                   onchange="updateServiceQuantity(${service.id}, this.value)"
+                                   onclick="event.stopPropagation()">
+                            <button onclick="increaseQuantity(${service.id}, event)">+</button>
+                            <span>${service.unit}</span>
+                        </div>
+                    ` : ''}
+                `;
+                
+                container.appendChild(serviceCard);
+            });
+        }
+
+        // Alternar selección de servicio
+        function toggleServiceSelection(serviceId) {
+            const card = document.querySelector(`.service-card[data-id="${serviceId}"]`);
+            const service = services.find(s => s.id === serviceId);
+            
+            if (service.fixedPrice) {
+                card.classList.toggle('selected');
+                updateServiceInQuote(serviceId, card.classList.contains('selected') ? 1 : 0);
+            }
+        }
+
+        // Actualizar cantidad de servicio
+        function updateServiceQuantity(serviceId, quantity) {
+            quantity = parseInt(quantity) || 0;
+            updateServiceInQuote(serviceId, quantity);
+            
+            // Actualizar apariencia de la tarjeta
+            const card = document.querySelector(`.service-card[data-id="${serviceId}"]`);
+            if (quantity > 0) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+        }
+
+        // Aumentar cantidad
+        function increaseQuantity(serviceId, event) {
+            event.stopPropagation();
+            const input = document.getElementById(`qty_${serviceId}`);
+            const max = parseInt(input.max) || 999999;
+            let value = parseInt(input.value) || 0;
+            if (value < max) {
+                value++;
+                input.value = value;
+                updateServiceQuantity(serviceId, value);
+            }
+        }
+
+        // Disminuir cantidad
+        function decreaseQuantity(serviceId, event) {
+            event.stopPropagation();
+            const input = document.getElementById(`qty_${serviceId}`);
+            const min = parseInt(input.min) || 0;
+            let value = parseInt(input.value) || 0;
+            if (value > min) {
+                value--;
+                input.value = value;
+                updateServiceQuantity(serviceId, value);
+            }
+        }
+
+        // Actualizar servicio en la cotización
+        function updateServiceInQuote(serviceId, quantity) {
+            const service = services.find(s => s.id === serviceId);
+            const existingIndex = currentQuote.services.findIndex(s => s.id === serviceId);
+            
+            if (quantity > 0) {
+                const serviceData = {
+                    id: service.id,
+                    name: service.name,
+                    unit: service.unit,
+                    quantity: quantity,
+                    unitPrice: service.fixedPrice ? service.price : service.pricePerUnit,
+                    subtotal: service.fixedPrice ? service.price * quantity : service.pricePerUnit * quantity
+                };
+                
+                if (existingIndex >= 0) {
+                    currentQuote.services[existingIndex] = serviceData;
+                } else {
+                    currentQuote.services.push(serviceData);
+                }
+            } else {
+                if (existingIndex >= 0) {
+                    currentQuote.services.splice(existingIndex, 1);
+                }
+            }
+            
+            calculateQuote();
+        }
+
+        // Calcular cotización
+        function calculateQuote() {
+            // Validar datos del cliente
+            const clientName = document.getElementById('clientName').value;
+            const clientPhone = document.getElementById('clientPhone').value;
+            
+            if (!clientName || !clientPhone) {
+                alert('Por favor complete el nombre y teléfono del cliente');
+                return;
+            }
+            
+            // Actualizar datos del cliente
+            currentQuote.client = {
+                name: clientName,
+                address: document.getElementById('clientAddress').value,
+                phone: clientPhone,
+                email: document.getElementById('clientEmail').value
+            };
+            
+            // Calcular totales
+            currentQuote.subtotal = currentQuote.services.reduce((sum, service) => sum + service.subtotal, 0);
+            currentQuote.iva = currentQuote.subtotal * 0.12;
+            currentQuote.total = currentQuote.subtotal + currentQuote.iva;
+            
+            // Actualizar interfaz
+            document.getElementById('subtotalAmount').textContent = `Q ${currentQuote.subtotal.toFixed(2)}`;
+            document.getElementById('ivaAmount').textContent = `Q ${currentQuote.iva.toFixed(2)}`;
+            document.getElementById('totalAmount').textContent = `Q ${currentQuote.total.toFixed(2)}`;
+            
+            // Mostrar vista previa
+            updatePreview();
+            document.getElementById('previewSection').classList.add('active');
+            
+            alert('Cotización calculada exitosamente');
+        }
+
+        // Actualizar vista previa
+        function updatePreview() {
+            // Actualizar información del cliente
+            document.getElementById('previewClientName').textContent = currentQuote.client.name;
+            document.getElementById('previewClientAddress').textContent = currentQuote.client.address || '-';
+            document.getElementById('previewClientPhone').textContent = currentQuote.client.phone;
+            
+            // Actualizar fechas
+            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('previewDate').textContent = currentQuote.date.toLocaleDateString('es-GT', dateOptions);
+            document.getElementById('previewValidUntil').textContent = currentQuote.validUntil.toLocaleDateString('es-GT', dateOptions);
+            
+            // Actualizar número de cotización
+            document.getElementById('quoteNumber').textContent = currentQuote.id;
+            
+            // Actualizar tabla de servicios
+            const tableBody = document.getElementById('previewServicesTable');
+            tableBody.innerHTML = '';
+            
+            currentQuote.services.forEach(service => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">${service.name}</td>
+                    <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">${service.quantity} ${service.unit}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Q ${service.unitPrice.toFixed(2)}</td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Q ${service.subtotal.toFixed(2)}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // Actualizar totales
+            document.getElementById('previewSubtotal').textContent = `Q ${currentQuote.subtotal.toFixed(2)}`;
+            document.getElementById('previewIVA').textContent = `Q ${currentQuote.iva.toFixed(2)}`;
+            document.getElementById('previewTotal').textContent = `Q ${currentQuote.total.toFixed(2)}`;
+        }
+
+        // Generar ID de cotización
+        function generateQuoteId() {
+            const date = new Date();
+            const year = date.getFullYear().toString().slice(-2);
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            return `${year}${month}${day}${random}`;
+        }
+
+        // Generar PDF
+        function generatePDF() {
+            if (currentQuote.services.length === 0) {
+                alert('No hay servicios seleccionados para generar el PDF');
+                return;
+            }
+            
+            // En un entorno real, aquí se usaría una librería como jsPDF
+            // Por ahora simulamos la generación
+            alert('Generando PDF... (En producción se usaría jsPDF)');
+            
+            // Crear contenido para el PDF
+            const printContent = document.getElementById('previewSection').innerHTML;
+            const originalContent = document.body.innerHTML;
+            
+            document.body.innerHTML = printContent;
+            window.print();
+            document.body.innerHTML = originalContent;
+            location.reload(); // Recargar para restaurar la interfaz
+        }
+
+        // Enviar por WhatsApp
+        function sendWhatsApp() {
+            if (currentQuote.services.length === 0) {
+                alert('No hay servicios seleccionados para enviar');
+                return;
+            }
+            
+            const phone = currentQuote.client.phone.replace(/\D/g, '');
+            if (!phone) {
+                alert('No hay número de teléfono para enviar la cotización');
+                return;
+            }
+            
+            // Crear mensaje
+            let message = `*Cotización #${currentQuote.id} - Constructora WM/M&S*\n\n`;
+            message += `*Cliente:* ${currentQuote.client.name}\n`;
+            message += `*Fecha:* ${currentQuote.date.toLocaleDateString('es-GT')}\n\n`;
+            message += `*Servicios:*\n`;
+            
+            currentQuote.services.forEach(service => {
+                message += `• ${service.name}: ${service.quantity} ${service.unit} - Q ${service.subtotal.toFixed(2)}\n`;
+            });
+            
+            message += `\n*Subtotal:* Q ${currentQuote.subtotal.toFixed(2)}\n`;
+            message += `*IVA (12%):* Q ${currentQuote.iva.toFixed(2)}\n`;
+            message += `*TOTAL:* Q ${currentQuote.total.toFixed(2)}\n\n`;
+            message += `_Válido hasta: ${currentQuote.validUntil.toLocaleDateString('es-GT')}_`;
+            
+            // Codificar mensaje para URL
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappURL = `https://wa.me/${phone}?text=${encodedMessage}`;
+            
+            // Abrir en nueva ventana
+            window.open(whatsappURL, '_blank');
+        }
+
+        // Guardar cotización localmente
+        function saveQuote() {
+            if (currentQuote.services.length === 0) {
+                alert('No hay servicios para guardar');
+                return;
+            }
+            
+            // Obtener cotizaciones guardadas
+            let savedQuotes = JSON.parse(localStorage.getItem('savedQuotes')) || [];
+            
+            // Agregar nueva cotización
+            savedQuotes.push({
+                ...currentQuote,
+                savedAt: new Date().toISOString()
+            });
+            
+            // Guardar en localStorage
+            localStorage.setItem('savedQuotes', JSON.stringify(savedQuotes));
+            
+            alert(`Cotización #${currentQuote.id} guardada exitosamente`);
+            
+            // Generar nueva cotización
+            currentQuote = {
+                id: generateQuoteId(),
+                client: {},
+                services: [],
+                subtotal: 0,
+                iva: 0,
+                total: 0,
+                date: new Date(),
+                validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+            };
+            
+            // Actualizar interfaz
+            calculateQuote();
+        }
+
+        // Cargar cotizaciones guardadas
+        function loadSavedQuotes() {
+            const savedQuotes = JSON.parse(localStorage.getItem('savedQuotes')) || [];
+            console.log(`${savedQuotes.length} cotizaciones guardadas`);
+        }
+
+        // Limpiar formulario
+        function clearForm() {
+            if (confirm('¿Está seguro de limpiar el formulario? Se perderán los datos no guardados.')) {
+                // Limpiar campos
+                document.getElementById('clientName').value = '';
+                document.getElementById('clientAddress').value = '';
+                document.getElementById('clientPhone').value = '';
+                document.getElementById('clientEmail').value = '';
+                
+                // Limpiar selección de servicios
+                document.querySelectorAll('.service-card').forEach(card => {
+                    card.classList.remove('selected');
+                    const input = card.querySelector('input[type="number"]');
+                    if (input) input.value = '0';
+                });
+                
+                // Reiniciar cotización
+                currentQuote = {
+                    id: generateQuoteId(),
+                    client: {},
+                    services: [],
+                    subtotal: 0,
+                    iva: 0,
+                    total: 0,
+                    date: new Date(),
+                    validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                };
+                
+                // Actualizar interfaz
+                calculateQuote();
+                document.getElementById('previewSection').classList.remove('active');
+                
+                alert('Formulario limpiado exitosamente');
+            }
+        }
+
+        // Ir al dashboard
+        function goToDashboard() {
+            if (confirm('¿Desea ir al Dashboard? Los cambios no guardados se perderán.')) {
+                window.location.href = 'dashboard.html';
+            }
+        }
+
+        // Función para imprimir (alternativa)
+        function printQuote() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

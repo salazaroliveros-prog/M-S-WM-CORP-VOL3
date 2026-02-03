@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Recursos Humanos - Constructora WM/M&S</title>
+    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        /* Estilos específicos para RRHH - Sección Planillas */
+        
+        .planilla-section {
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(212, 160, 23, 0.3);
+        }
+        
+        .planilla-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--mostaza-oscuro);
+        }
+        
+        .planilla-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .tabs-container {
+            display: flex;
+            border-bottom: 1px solid #555;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ccc;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab.active {
+            background: var(--azul-marino);
+            color: white;
+            border-color: #555;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .planilla-table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .planilla-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        
+        .planilla-table th {
+            background: var(--azul-marino);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .planilla-table td {
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .planilla-table tr:hover td {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .editable-cell {
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .editable-cell:hover {
+            background: rgba(212, 160, 23, 0.1) !important;
+        }
+        
+        .edit-input {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid var(--mostaza-oscuro);
+            background: #222;
+            color: white;
+            border-radius: 3px;
+        }
+        
+        .worker-row.selected {
+            background: rgba(33, 150, 243, 0.1) !important;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .summary-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        
+        .summary-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffd54f;
+            margin: 10px 0;
+        }
+        
+        .manual-entry-form {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .currency-input {
+            position: relative;
+        }
+        
+        .currency-input::before {
+            content: "Q";
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            font-weight: bold;
+        }
+        
+        .currency-input input {
+            padding-left: 25px !important;
+        }
+        
+        .file-format-options {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .format-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .format-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .format-option.selected {
+            background: rgba(212, 160, 23, 0.2);
+            border: 1px solid var(--mostaza-oscuro);
+        }
+        
+        .format-icon {
+            font-size: 1.5rem;
+            color: var(--mostaza-oscuro);
+        }
+        
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .sync-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .sync-indicator.synced {
+            background: #4caf50;
+            box-shadow: 0 0 10px #4caf50;
+        }
+        
+        .sync-indicator.pending {
+            background: #ff9800;
+            box-shadow: 0 0 10px #ff9800;
+            animation: pulse 1s infinite;
+        }
+        
+        .sync-indicator.error {
+            background: #f44336;
+            box-shadow: 0 0 10px #f44336;
+        }
+        
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-btn-small {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
+        @media (max-width: 768px) {
+            .planilla-table-container {
+                margin: 10px -10px;
+                border-radius: 0;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .planilla-actions {
+                flex-direction: column;
+            }
+            
+            .planilla-actions button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body class="rrhh-container">
+    <!-- Contenido existente del módulo RRHH -->
+    
+    <!-- Sección de Planillas (Agregar esta sección) -->
+    <section class="planilla-section" id="planillaSection">
+        <div class="planilla-header">
+            <h2><i class="fas fa-file-invoice-dollar"></i> GESTIÓN DE PLANILLAS</h2>
+            <div class="planilla-actions">
+                <button class="btn btn-secondary" onclick="window.location.href='rrhh.html'">
+                    <i class="fas fa-arrow-left"></i> Volver a RRHH
+                </button>
+                <button class="btn btn-primary" onclick="generatePayrollFromAttendance()">
+                    <i class="fas fa-calculator"></i> Generar desde Asistencia
+                </button>
+                <button class="btn btn-success" onclick="openManualEntry()">
+                    <i class="fas fa-edit"></i> Ingreso Manual
+                </button>
+                <button class="btn btn-warning" onclick="exportPayroll()">
+                    <i class="fas fa-download"></i> Exportar Planilla
+                </button>
+                <button class="btn btn-info" onclick="syncPayroll()">
+                    <i class="fas fa-sync-alt"></i> Sincronizar
+                </button>
+            </div>
+        </div>
+        
+        <!-- Tabs de navegación -->
+        <div class="tabs-container">
+            <div class="tab active" onclick="showTab('current')">Planilla Actual</div>
+            <div class="tab" onclick="showTab('manual')">Ingreso Manual</div>
+            <div class="tab" onclick="showTab('history')">Historial</div>
+            <div class="tab" onclick="showTab('sync')">Sincronización</div>
+        </div>
+        
+        <!-- Tab: Planilla Actual -->
+        <div class="tab-content active" id="currentTab">
+            <div class="sync-status">
+                <div class="sync-indicator" id="syncIndicator"></div>
+                <span id="syncStatusText">Estado de sincronización</span>
+                <span style="margin-left: auto; font-size: 0.9rem;" id="lastSyncTime"></span>
+            </div>
+            
+            <div class="summary-card">
+                <h3>Resumen de Planilla</h3>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div>Total Trabajadores</div>
+                        <div class="summary-value" id="totalWorkers">0</div>
+                        <div>Esta semana</div>
+                    </div>
+                    <div class="summary-item">
+                        <div>Total Horas</div>
+                        <div class="summary-value" id="totalHours">0</div>
+                        <div>Horas trabajadas</div>
+                    </div>
+                    <div class="summary-item">
+                        <div>Total a Pagar</div>
+                        <div class="summary-value" id="totalToPay">Q 0.00</div>
+                        <div>Bruto</div>
+                    </div>
+                    <div class="summary-item">
+                        <div>Promedio por Trabajador</div>
+                        <div class="summary-value" id="averagePay">Q 0.00</div>
+                        <div>Neto promedio</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="planilla-table-container">
+                <table class="planilla-table" id="payrollTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">Sel</th>
+                            <th>ID Trabajador</th>
+                            <th>Nombre</th>
+                            <th>Puesto</th>
+                            <th>Proyecto</th>
+                            <th>Días Trabajados</th>
+                            <th>Horas Extra</th>
+                            <th>Salario Diario</th>
+                            <th>Total Bruto</th>
+                            <th>Deducciones</th>
+                            <th>Total Neto</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payrollTableBody">
+                        <!-- Datos de planilla se cargarán aquí -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-success" onclick="calculateTotals()">
+                    <i class="fas fa-calculator"></i> Calcular Totales
+                </button>
+                <button class="btn btn-primary" onclick="savePayrollLocal()">
+                    <i class="fas fa-save"></i> Guardar Localmente
+                </button>
+                <button class="btn btn-warning" onclick="generatePDFReport()">
+                    <i class="fas fa-file-pdf"></i> Generar PDF
+                </button>
+                <button class="btn btn-danger" onclick="printPayroll()">
+                    <i class="fas fa-print"></i> Imprimir
+                </button>
+            </div>
+        </div>
+        
+        <!-- Tab: Ingreso Manual -->
+        <div class="tab-content" id="manualTab">
+            <h3>Ingreso Manual de Planilla</h3>
+            <p>Complete los datos manualmente o modifique los valores generados automáticamente</p>
+            
+            <div class="manual-entry-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="payrollPeriod">Período de Planilla *</label>
+                        <select id="payrollPeriod" class="form-control">
+                            <option value="semanal">Semanal</option>
+                            <option value="quincenal">Quincenal</option>
+                            <option value="mensual">Mensual</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="startDate">Fecha Inicio *</label>
+                        <input type="date" id="startDate" class="form-control" value="<?php echo date('Y-m-d', strtotime('-7 days')); ?>">
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">Fecha Fin *</label>
+                        <input type="date" id="endDate" class="form-control" value="<?php echo date('Y-m-d'); ?>">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="projectSelect">Proyecto *</label>
+                        <select id="projectSelect" class="form-control">
+                            <option value="">Seleccionar proyecto...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="payrollNumber">Número de Planilla</label>
+                        <input type="text" id="payrollNumber" class="form-control" value="PL-<?php echo date('Ymd'); ?>" readonly>
+                    </div>
+                </div>
+                
+                <h4 style="margin: 20px 0 10px; color: var(--mostaza-oscuro);">
+                    <i class="fas fa-users"></i> Agregar Trabajadores
+                </h4>
+                
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="addWorkerRow()">
+                        <i class="fas fa-plus"></i> Agregar Fila
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadWorkersFromProject()">
+                        <i class="fas fa-sync"></i> Cargar del Proyecto
+                    </button>
+                </div>
+                
+                <div class="planilla-table-container">
+                    <table class="planilla-table" id="manualPayrollTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>ID Trabajador</th>
+                                <th>Nombre</th>
+                                <th>Puesto</th>
+                                <th>Días Trab.</th>
+                                <th>Horas Extra</th>
+                                <th>Salario Diario</th>
+                                <th>Bonificaciones</th>
+                                <th>Deducciones</th>
+                                <th>Total Neto</th>
+                                <th style="width: 50px;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="manualPayrollTableBody">
+                            <!-- Filas manuales se agregarán aquí -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-success" onclick="saveManualPayroll()">
+                        <i class="fas fa-check-circle"></i> Guardar Planilla Manual
+                    </button>
+                    <button class="btn btn-warning" onclick="calculateManualTotals()">
+                        <i class="fas fa-calculator"></i> Calcular Totales Manuales
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearManualForm()">
+                        <i class="fas fa-trash"></i> Limpiar Formulario
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab: Historial -->
+        <div class="tab-content" id="historyTab">
+            <h3>Historial de Planillas</h3>
+            <p>Planillas guardadas localmente y sincronizadas</p>
+            
+            <div class="file-format-options">
+                <div class="format-option selected" onclick="filterHistory('all')">
+                    <i class="fas fa-list format-icon"></i>
+                    <div>
+                        <div>Todas</div>
+                        <small id="countAll">0 planillas</small>
+                    </div>
+                </div>
+                <div class="format-option" onclick="filterHistory('local')">
+                    <i class="fas fa-hdd format-icon"></i>
+                    <div>
+                        <div>Locales</div>
+                        <small id="countLocal">0 planillas</small>
+                    </div>
+                </div>
+                <div class="format-option" onclick="filterHistory('synced')">
+                    <i class="fas fa-cloud format-icon"></i>
+                    <div>
+                        <div>Sincronizadas</div>
+                        <small id="countSynced">0 planillas</small>
+                    </div>
+                </div>
+                <div class="format-option" onclick="filterHistory('pdf')">
+                    <i class="fas fa-file-pdf format-icon"></i>
+                    <div>
+                        <div>PDF</div>
+                        <small id="countPDF">0 archivos</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="history-list" id="historyList">
+                <!-- Historial se cargará aquí -->
+            </div>
+        </div>
+        
+        <!-- Tab: Sincronización -->
+        <div class="tab-content" id="syncTab">
+            <h3>Sincronización de Planillas</h3>
+            <p>Configuración y control de sincronización con la nube</p>
+            
+            <div class="sync-settings">
+                <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h4 style="color: var(--mostaza-oscuro); margin-bottom: 15px;">
+                        <i class="fas fa-cloud-upload-alt"></i> Servicios de Sincronización
+                    </h4>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="syncService">Servicio de Nube</label>
+                            <select id="syncService" class="form-control">
+                                <option value="google_sheets">Google Sheets</option>
+                                <option value="firebase">Firebase</option>
+                                <option value="supabase">Supabase</option>
+                                <option value="postgresql">PostgreSQL</option>
+                                <option value="local_only">Solo Local</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="syncFrequency">Frecuencia</label>
+                            <select id="syncFrequency" class="form-control">
+                                <option value="manual">Manual</option>
+                                <option value="daily">Diario</option>
+                                <option value="weekly">Semanal</option>
+                                <option value="realtime">Tiempo Real</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="apiKey">API Key / Conexión</label>
+                        <input type="password" id="apiKey" class="form-control" placeholder="Ingrese clave de API">
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn btn-success" onclick="testConnection()">
+                            <i class="fas fa-plug"></i> Probar Conexión
+                        </button>
+                        <button class="btn btn-primary" onclick="saveSyncSettings()">
+                            <i class="fas fa-save"></i> Guardar Configuración
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h4 style="color: var(--mostaza-oscuro); margin-bottom: 15px;">
+                        <i class="fas fa-exchange-alt"></i> Control de Sincronización
+                    </h4>
+                    
+                    <div class="sync-controls">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="syncToCloud()">
+                                <i class="fas fa-upload"></i> Subir a la Nube
+                            </button>
+                            <button class="btn btn-secondary" onclick="syncFromCloud()">
+                                <i class="fas fa-download"></i> Descargar de la Nube
+                            </button>
+                            <button class="btn btn-warning" onclick="resolveConflicts()">
+                                <i class="fas fa-exclamation-triangle"></i> Resolver Conflictos
+                            </button>
+                            <button class="btn btn-info" onclick="viewSyncLog()">
+                                <i class="fas fa-history"></i> Ver Registros
+                            </button>
+                        </div>
+                        
+                        <div id="syncProgress" style="margin-top: 20px; display: none;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>Sincronizando...</span>
+                                <span id="syncPercent">0%</span>
+                            </div>
+                            <div style="height: 10px; background: #333; border-radius: 5px; overflow: hidden;">
+                                <div id="syncProgressBar" style="height: 100%; background: var(--mostaza-oscuro); width: 0%; transition: width 0.3s;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px;">
+                    <h4 style="color: var(--mostaza-oscuro); margin-bottom: 15px;">
+                        <i class="fas fa-database"></i> Esquema de Datos
+                    </h4>
+                    
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: var(--azul-marino);">
+                                    <th style="padding: 10px; border: 1px solid #555;">Campo</th>
+                                    <th style="padding: 10px; border: 1px solid #555;">Tipo</th>
+                                    <th style="padding: 10px; border: 1px solid #555;">Descripción</th>
+                                    <th style="padding: 10px; border: 1px solid #555;">Ejemplo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>payroll_id</td><td>STRING</td><td>ID único de planilla</td><td>PL-20240115-001</td></tr>
+                                <tr><td>period</td><td>STRING</td><td>Período (semanal/quincenal/mensual)</td><td>semanal</td></tr>
+                                <tr><td>start_date</td><td>DATE</td><td>Fecha inicio</td><td>2024-01-08</td></tr>
+                                <tr><td>end_date</td><td>DATE</td><td>Fecha fin</td><td>2024-01-14</td></tr>
+                                <tr><td>project_id</td><td>STRING</td><td>ID del proyecto</td><td>PROJ-001</td></tr>
+                                <tr><td>total_workers</td><td>NUMBER</td><td>Total trabajadores</td><td>15</td></tr>
+                                <tr><td>total_amount</td><td>NUMBER</td><td>Total a pagar</td><td>25000.00</td></tr>
+                                <tr><td>status</td><td>STRING</td><td>Estado (draft/approved/paid)</td><td>approved</td></tr>
+                                <tr><td>created_at</td><td>TIMESTAMP</td><td>Fecha creación</td><td>2024-01-15 10:30:00</td></tr>
+                                <tr><td>sync_status</td><td>STRING</td><td>Estado sincronización</td><td>synced</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn btn-warning" onclick="generateSchema()">
+                            <i class="fas fa-code"></i> Generar Esquema SQL
+                        </button>
+                        <button class="btn btn-info" onclick="exportSchema()">
+                            <i class="fas fa-download"></i> Exportar Esquema
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Variables globales para planillas
+        let currentPayroll = {
+            id: '',
+            period: 'semanal',
+            startDate: '',
+            endDate: '',
+            project: '',
+            workers: [],
+            totals: {
+                totalWorkers: 0,
+                totalHours: 0,
+                totalGross: 0,
+                totalDeductions: 0,
+                totalNet: 0
+            },
+            status: 'draft',
+            syncStatus: 'local',
+            createdAt: new Date().toISOString()
+        };
+
+        let payrollHistory = [];
+        let manualEntries = [];
+        let syncSettings = {};
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePayrollModule();
+            loadPayrollData();
+            loadSyncSettings();
+            updateSyncIndicator();
+        });
+
+        // Inicializar módulo de planillas
+        function initializePayrollModule() {
+            // Generar ID de planilla
+            currentPayroll.id = generatePayrollId();
+            document.getElementById('payrollNumber').value = currentPayroll.id;
+            
+            // Establecer fechas por defecto
+            const today = new Date();
+            const sevenDaysAgo = new Date(today);
+            sevenDaysAgo.setDate(today.getDate() - 6); // Últimos 7 días incluido hoy
+            
+            currentPayroll.startDate = formatDate(sevenDaysAgo);
+            currentPayroll.endDate = formatDate(today);
+            
+            document.getElementById('startDate').value = currentPayroll.startDate;
+            document.getElementById('endDate').value = currentPayroll.endDate;
+            
+            // Cargar proyectos
+            loadProjects();
+            
+            // Configurar eventos de edición
+            setupTableEditing();
+        }
+
+        // Cargar datos de planillas
+        function loadPayrollData() {
+            // Cargar del localStorage
+            const savedPayroll = localStorage.getItem('currentPayroll');
+            const savedHistory = localStorage.getItem('payrollHistory');
+            const savedManual = localStorage.getItem('manualEntries');
+            
+            if (savedPayroll) {
+                currentPayroll = JSON.parse(savedPayroll);
+                updatePayrollUI();
+            }
+            
+            if (savedHistory) {
+                payrollHistory = JSON.parse(savedHistory);
+                updateHistoryCounts();
+                displayHistory();
+            }
+            
+            if (savedManual) {
+                manualEntries = JSON.parse(savedManual);
+            }
+            
+            // Actualizar indicador de sincronización
+            updateSyncIndicator();
+        }
+
+        // Actualizar interfaz de planilla
+        function updatePayrollUI() {
+            // Actualizar resumen
+            document.getElementById('totalWorkers').textContent = currentPayroll.totals.totalWorkers;
+            document.getElementById('totalHours').textContent = currentPayroll.totals.totalHours;
+            document.getElementById('totalToPay').textContent = `Q ${currentPayroll.totals.totalNet.toFixed(2)}`;
+            document.getElementById('averagePay').textContent = currentPayroll.totals.totalWorkers > 0 ? 
+                `Q ${(currentPayroll.totals.totalNet / currentPayroll.totals.totalWorkers).toFixed(2)}` : 'Q 0.00';
+            
+            // Actualizar tabla
+            updatePayrollTable();
+        }
+
+        // Actualizar tabla de planilla
+        function updatePayrollTable() {
+            const tableBody = document.getElementById('payrollTableBody');
+            tableBody.innerHTML = '';
+            
+            currentPayroll.workers.forEach((worker, index) => {
+                const row = document.createElement('tr');
+                row.className = 'worker-row';
+                row.dataset.index = index;
+                
+                row.innerHTML = `
+                    <td>
+                        <input type="checkbox" onclick="toggleWorkerSelection(${index})" ${worker.selected ? 'checked' : ''}>
+                    </td>
+                    <td>${worker.id}</td>
+                    <td>${worker.name}</td>
+                    <td>${worker.position}</td>
+                    <td>${worker.project}</td>
+                    <td class="editable-cell" onclick="editCell(${index}, 'daysWorked')">${worker.daysWorked}</td>
+                    <td class="editable-cell" onclick="editCell(${index}, 'extraHours')">${worker.extraHours}</td>
+                    <td class="editable-cell" onclick="editCell(${index}, 'dailySalary')">Q ${worker.dailySalary.toFixed(2)}</td>
+                    <td>Q ${worker.grossSalary.toFixed(2)}</td>
+                    <td class="editable-cell" onclick="editCell(${index}, 'deductions')">Q ${worker.deductions.toFixed(2)}</td>
+                    <td>Q ${worker.netSalary.toFixed(2)}</td>
+                    <td>
+                        <span class="status-badge ${worker.status}">${worker.status === 'paid' ? 'Pagado' : 
+                            worker.status === 'approved' ? 'Aprobado' : 'Pendiente'}</span>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Generar planilla desde asistencia
+        function generatePayrollFromAttendance() {
+            showLoading('Generando planilla desde datos de asistencia...');
+            
+            // Obtener datos de asistencia del localStorage
+            const attendanceData = JSON.parse(localStorage.getItem('attendanceData')) || [];
+            const workersData = JSON.parse(localStorage.getItem('workersData')) || [];
+            
+            // Filtrar asistencia del período actual
+            const startDate = new Date(currentPayroll.startDate);
+            const endDate = new Date(currentPayroll.endDate);
+            
+            const periodAttendance = attendanceData.filter(record => {
+                const recordDate = new Date(record.date);
+                return recordDate >= startDate && recordDate <= endDate;
+            });
+            
+            // Agrupar por trabajador
+            const workerAttendance = {};
+            periodAttendance.forEach(record => {
+                if (!workerAttendance[record.workerId]) {
+                    workerAttendance[record.workerId] = {
+                        days: 0,
+                        hours: 0,
+                        extraHours: 0
+                    };
+                }
+                workerAttendance[record.workerId].days++;
+                workerAttendance[record.workerId].hours += record.hours || 8;
+                workerAttendance[record.workerId].extraHours += record.extraHours || 0;
+            });
+            
+            // Crear planilla
+            currentPayroll.workers = workersData.map(worker => {
+                const attendance = workerAttendance[worker.id] || { days: 0, hours: 0, extraHours: 0 };
+                const dailySalary = getDailySalaryByPosition(worker.position);
+                const grossSalary = (attendance.days * dailySalary) + (attendance.extraHours * (dailySalary / 8) * 1.5);
+                const deductions = calculateDeductions(grossSalary);
+                const netSalary = grossSalary - deductions;
+                
+                return {
+                    id: worker.id,
+                    name: worker.name,
+                    position: worker.position,
+                    project: worker.project || currentPayroll.project,
+                    daysWorked: attendance.days,
+                    extraHours: attendance.extraHours,
+                    dailySalary: dailySalary,
+                    grossSalary: grossSalary,
+                    deductions: deductions,
+                    netSalary: netSalary,
+                    status: 'pending',
+                    selected: false
+                };
+            });
+            
+            // Calcular totales
+            calculateTotals();
+            
+            // Actualizar UI
+            updatePayrollUI();
+            
+            hideLoading();
+            showNotification('success', 'Planilla generada desde datos de asistencia');
+        }
+
+        // Abrir ingreso manual
+        function openManualEntry() {
+            showTab('manual');
+            
+            // Agregar una fila inicial
+            addWorkerRow();
+        }
+
+        // Agregar fila para ingreso manual
+        function addWorkerRow() {
+            const tableBody = document.getElementById('manualPayrollTableBody');
+            const rowIndex = tableBody.children.length;
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${rowIndex + 1}</td>
+                <td><input type="text" class="form-control" placeholder="ID Trabajador" onchange="updateManualWorker(${rowIndex}, 'id', this.value)"></td>
+                <td><input type="text" class="form-control" placeholder="Nombre completo" onchange="updateManualWorker(${rowIndex}, 'name', this.value)"></td>
+                <td>
+                    <select class="form-control" onchange="updateManualWorker(${rowIndex}, 'position', this.value); updateDailySalary(${rowIndex}, this.value)">
+                        <option value="">Seleccionar...</option>
+                        <option value="supervisor">Supervisor (Q 250.00)</option>
+                        <option value="encargado">Encargado (Q 250.00)</option>
+                        <option value="maestro">Maestro de Obras (Q 200.00)</option>
+                        <option value="albañil">Albañil (Q 175.00)</option>
+                        <option value="ayudante">Ayudante (Q 125.00)</option>
+                        <option value="peon">Peón (Q 100.00)</option>
+                        <option value="otros">Otros</option>
+                    </select>
+                </td>
+                <td><input type="number" class="form-control" min="0" max="31" value="6" onchange="updateManualWorker(${rowIndex}, 'days', this.value); calculateManualRow(${rowIndex})"></td>
+                <td><input type="number" class="form-control" min="0" step="0.5" value="0" onchange="updateManualWorker(${rowIndex}, 'extraHours', this.value); calculateManualRow(${rowIndex})"></td>
+                <td>
+                    <div class="currency-input">
+                        <input type="number" class="form-control" min="0" step="0.01" value="175.00" 
+                               onchange="updateManualWorker(${rowIndex}, 'dailySalary', this.value); calculateManualRow(${rowIndex})">
+                    </div>
+                </td>
+                <td>
+                    <div class="currency-input">
+                        <input type="number" class="form-control" min="0" step="0.01" value="0.00" 
+                               onchange="updateManualWorker(${rowIndex}, 'bonus', this.value); calculateManualRow(${rowIndex})">
+                    </div>
+                </td>
+                <td>
+                    <div class="currency-input">
+                        <input type="number" class="form-control" min="0" step="0.01" value="0.00" 
+                               onchange="updateManualWorker(${rowIndex}, 'deductions', this.value); calculateManualRow(${rowIndex})">
+                    </div>
+                </td>
+                <td id="manualNetSalary_${rowIndex}">Q 0.00</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="removeManualRow(${rowIndex})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            tableBody.appendChild(row);
+            
+            // Inicializar entrada manual
+            manualEntries[rowIndex] = {
+                id: '',
+                name: '',
+                position: '',
+                days: 6,
+                extraHours: 0,
+                dailySalary: 175.00,
+                bonus: 0,
+                deductions: 0,
+                netSalary: 0
+            };
+            
+            // Calcular primera vez
+            calculateManualRow(rowIndex);
+        }
+
+        // Actualizar trabajador manual
+        function updateManualWorker(index, field, value) {
+            if (!manualEntries[index]) return;
+            
+            if (field === 'id') manualEntries[index].id = value;
+            else if (field === 'name') manualEntries[index].name = value;
+            else if (field === 'position') manualEntries[index].position = value;
+            else if (field === 'days') manualEntries[index].days = parseFloat(value) || 0;
+            else if (field === 'extraHours') manualEntries[index].extraHours = parseFloat(value) || 0;
+            else if (field === 'dailySalary') manualEntries[index].dailySalary = parseFloat(value) || 0;
+            else if (field === 'bonus') manualEntries[index].bonus = parseFloat(value) || 0;
+            else if (field === 'deductions') manualEntries[index].deductions = parseFloat(value) || 0;
+        }
+
+        // Actualizar salario diario según puesto
+        function updateDailySalary(index, position) {
+            const salaryMap = {
+                'supervisor': 250.00,
+                'encargado': 250.00,
+                'maestro': 200.00,
+                'albañil': 175.00,
+                'ayudante': 125.00,
+                'peon': 100.00,
+                'otros': 150.00
+            };
+            
+            if (salaryMap[position]) {
+                const input = document.querySelector(`#manualPayrollTableBody tr:nth-child(${index + 1}) .currency-input input`);
+                if (input) {
+                    input.value = salaryMap[position].toFixed(2);
+                    updateManualWorker(index, 'dailySalary', salaryMap[position]);
+                    calculateManualRow(index);
+                }
+            }
+        }
+
+        // Calcular fila manual
+        function calculateManualRow(index) {
+            const worker = manualEntries[index];
+            if (!worker) return;
+            
+            // Calcular salario bruto
+            const regularSalary = worker.days * worker.dailySalary;
+            const extraSalary = worker.extraHours * (worker.dailySalary / 8) * 1.5;
+            const grossSalary = regularSalary + extraSalary + worker.bonus;
+            
+            // Calcular salario neto
+            worker.netSalary = grossSalary - worker.deductions;
+            
+            // Actualizar UI
+            const netCell = document.getElementById(`manualNetSalary_${index}`);
+            if (netCell) {
+                netCell.textContent = `Q ${worker.netSalary.toFixed(2)}`;
+            }
+        }
+
+        // Eliminar fila manual
+        function removeManualRow(index) {
+            const tableBody = document.getElementById('manualPayrollTableBody');
+            if (tableBody.children.length > 1) {
+                tableBody.removeChild(tableBody.children[index]);
+                manualEntries.splice(index, 1);
+                
+                // Renumerar filas
+                updateManualRowNumbers();
+            } else {
+                alert('Debe haber al menos un trabajador en la planilla');
+            }
+        }
+
+        // Renumerar filas manuales
+        function updateManualRowNumbers() {
+            const rows = document.querySelectorAll('#manualPayrollTableBody tr');
+            rows.forEach((row, index) => {
+                row.cells[0].textContent = index + 1;
+            });
+        }
+
+        // Calcular totales manuales
+        function calculateManualTotals() {
+            let totals = {
+                workers: 0,
+                totalDays: 0,
+                totalExtraHours: 0,
+                totalGross: 0,
+                totalDeductions: 0,
+                totalNet: 0
+            };
+            
+            manualEntries.forEach(worker => {
+                if (worker.id && worker.name) {
+                    totals.workers++;
+                    totals.totalDays += worker.days || 0;
+                    totals.totalExtraHours += worker.extraHours || 0;
+                    totals.totalGross += (worker.days * worker.dailySalary) + 
+                                        (worker.extraHours * (worker.dailySalary / 8) * 1.5) + 
+                                        worker.bonus;
+                    totals.totalDeductions += worker.deductions || 0;
+                    totals.totalNet += worker.netSalary || 0;
+                }
+            });
+            
+            // Mostrar resumen
+            showNotification('info', 
+                `Resumen: ${totals.workers} trabajadores, ` +
+                `Total: Q ${totals.totalNet.toFixed(2)}, ` +
+                `Promedio: Q ${(totals.totalNet / (totals.workers || 1)).toFixed(2)}`
+            );
+        }
+
+        // Guardar planilla manual
+        function saveManualPayroll() {
+            // Validar datos
+            if (manualEntries.length === 0) {
+                showNotification('error', 'No hay trabajadores en la planilla');
+                return;
+            }
+            
+            const project = document.getElementById('projectSelect').value;
+            if (!project) {
+                showNotification('error', 'Seleccione un proyecto');
+                return;
+            }
+            
+            // Crear planilla a partir de entradas manuales
+            currentPayroll.period = document.getElementById('payrollPeriod').value;
+            currentPayroll.startDate = document.getElementById('startDate').value;
+            currentPayroll.endDate = document.getElementById('endDate').value;
+            currentPayroll.project = project;
+            currentPayroll.id = document.getElementById('payrollNumber').value;
+            
+            currentPayroll.workers = manualEntries.filter(worker => worker.id && worker.name).map(worker => ({
+                id: worker.id,
+                name: worker.name,
+                position: worker.position,
+                project: project,
+                daysWorked: worker.days,
+                extraHours: worker.extraHours,
+                dailySalary: worker.dailySalary,
+                grossSalary: (worker.days * worker.dailySalary) + 
+                           (worker.extraHours * (worker.dailySalary / 8) * 1.5) + 
+                           worker.bonus,
+                deductions: worker.deductions,
+                netSalary: worker.netSalary,
+                status: 'pending',
+                selected: false
+            }));
+            
+            // Calcular totales
+            calculateTotals();
+            
+            // Guardar localmente
+            savePayrollLocal();
+            
+            // Regresar a la pestaña principal
+            showTab('current');
+            
+            showNotification('success', 'Planilla manual guardada exitosamente');
+        }
+
+        // Calcular totales de planilla
+        function calculateTotals() {
+            currentPayroll.totals = {
+                totalWorkers: currentPayroll.workers.length,
+                totalHours: currentPayroll.workers.reduce((sum, w) => sum + (w.daysWorked * 8) + w.extraHours, 0),
+                totalGross: currentPayroll.workers.reduce((sum, w) => sum + w.grossSalary, 0),
+                totalDeductions: currentPayroll.workers.reduce((sum, w) => sum + w.deductions, 0),
+                totalNet: currentPayroll.workers.reduce((sum, w) => sum + w.netSalary, 0)
+            };
+            
+            updatePayrollUI();
+        }
+
+        // Guardar planilla localmente
+        function savePayrollLocal() {
+            // Guardar planilla actual
+            localStorage.setItem('currentPayroll', JSON.stringify(currentPayroll));
+            
+            // Agregar al historial
+            const historyEntry = {
+                ...currentPayroll,
+                savedAt: new Date().toISOString(),
+                type: 'local'
+            };
+            
+            payrollHistory.unshift(historyEntry);
+            
+            // Mantener solo últimos 50 registros
+            if (payrollHistory.length > 50) {
+                payrollHistory = payrollHistory.slice(0, 50);
+            }
+            
+            localStorage.setItem('payrollHistory', JSON.stringify(payrollHistory));
+            
+            // Actualizar contadores
+            updateHistoryCounts();
+            
+            showNotification('success', 'Planilla guardada localmente');
+        }
+
+        // Exportar planilla en diferentes formatos
+        function exportPayroll() {
+            const format = prompt('Seleccione formato:\n1. JSON (para consultas)\n2. CSV (para Excel)\n3. PDF (para imprimir)\n\nIngrese 1, 2 o 3:');
+            
+            if (format === '1') {
+                exportAsJSON();
+            } else if (format === '2') {
+                exportAsCSV();
+            } else if (format === '3') {
+                generatePDFReport();
+            }
+        }
+
+        // Exportar como JSON
+        function exportAsJSON() {
+            const dataStr = JSON.stringify(currentPayroll, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const exportFileDefaultName = `planilla_${currentPayroll.id}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showNotification('success', 'Planilla exportada como JSON');
+        }
+
+        // Exportar como CSV
+        function exportAsCSV() {
+            let csv = 'ID Trabajador,Nombre,Puesto,Proyecto,Días Trabajados,Horas Extra,Salario Diario,Salario Bruto,Deducciones,Salario Neto,Estado\n';
+            
+            currentPayroll.workers.forEach(worker => {
+                csv += `"${worker.id}","${worker.name}","${worker.position}","${worker.project}",`;
+                csv += `${worker.daysWorked},${worker.extraHours},${worker.dailySalary},`;
+                csv += `${worker.grossSalary},${worker.deductions},${worker.netSalary},"${worker.status}"\n`;
+            });
+            
+            csv += `\nTOTALES,,,${currentPayroll.totals.totalWorkers},,,`;
+            csv += `${currentPayroll.totals.totalGross},${currentPayroll.totals.totalDeductions},`;
+            csv += `${currentPayroll.totals.totalNet},\n`;
+            
+            const dataUri = 'data:text/csv;charset=utf-8,'+ encodeURIComponent(csv);
+            const exportFileDefaultName = `planilla_${currentPayroll.id}.csv`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showNotification('success', 'Planilla exportada como CSV');
+        }
+
+        // Generar reporte PDF
+        function generatePDFReport() {
+            showLoading('Generando reporte PDF...');
+            
+            try {
+                // Crear documento PDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                
+                // Configuración
+                const pageWidth = doc.internal.pageSize.width;
+                let yPos = 20;
+                
+                // Encabezado
+                doc.setFontSize(20);
+                doc.setTextColor(26, 35, 126); // Azul marino
+                doc.text('CONSTRUCTORA WM/M&S', pageWidth / 2, yPos, { align: 'center' });
+                
+                doc.setFontSize(12);
+                doc.setTextColor(212, 160, 23); // Mostaza oscuro
+                doc.text('EDIFICANDO EL FUTURO', pageWidth / 2, yPos + 7, { align: 'center' });
+                
+                yPos += 25;
+                
+                // Información de planilla
+                doc.setFontSize(14);
+                doc.setTextColor(0, 0, 0);
+                doc.text('REPORTE DE PLANILLA DE PAGO', pageWidth / 2, yPos, { align: 'center' });
+                
+                yPos += 10;
+                
+                doc.setFontSize(10);
+                doc.text(`Número: ${currentPayroll.id}`, 20, yPos);
+                doc.text(`Período: ${currentPayroll.period.toUpperCase()}`, pageWidth - 20, yPos, { align: 'right' });
+                
+                yPos += 6;
+                doc.text(`Proyecto: ${currentPayroll.project || 'No especificado'}`, 20, yPos);
+                
+                yPos += 6;
+                const periodText = `Del ${formatDateDisplay(currentPayroll.startDate)} al ${formatDateDisplay(currentPayroll.endDate)}`;
+                doc.text(periodText, 20, yPos);
+                doc.text(`Generado: ${formatDateDisplay(new Date())}`, pageWidth - 20, yPos, { align: 'right' });
+                
+                yPos += 15;
+                
+                // Tabla de trabajadores
+                const headers = [['#', 'ID', 'Nombre', 'Puesto', 'Días', 'H.Extra', 'S.Diario', 'Bruto', 'Deduc.', 'Neto']];
+                const data = currentPayroll.workers.map((worker, index) => [
+                    index + 1,
+                    worker.id,
+                    worker.name.substring(0, 15),
+                    worker.position.substring(0, 10),
+                    worker.daysWorked.toString(),
+                    worker.extraHours.toString(),
+                    `Q${worker.dailySalary.toFixed(2)}`,
+                    `Q${worker.grossSalary.toFixed(2)}`,
+                    `Q${worker.deductions.toFixed(2)}`,
+                    `Q${worker.netSalary.toFixed(2)}`
+                ]);
+                
+                doc.autoTable({
+                    head: headers,
+                    body: data,
+                    startY: yPos,
+                    theme: 'grid',
+                    headStyles: { fillColor: [26, 35, 126], textColor: [255, 255, 255] },
+                    alternateRowStyles: { fillColor: [245, 245, 245] },
+                    margin: { left: 10, right: 10 }
+                });
+                
+                yPos = doc.lastAutoTable.finalY + 10;
+                
+                // Totales
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'bold');
+                doc.text('RESUMEN DE PLANILLA', 20, yPos);
+                
+                yPos += 10;
+                doc.setFont(undefined, 'normal');
+                
+                const totalsData = [
+                    ['Total Trabajadores:', currentPayroll.totals.totalWorkers.toString()],
+                    ['Total Horas Trabajadas:', currentPayroll.totals.totalHours.toFixed(1) + ' horas'],
+                    ['Total Salario Bruto:', `Q ${currentPayroll.totals.totalGross.toFixed(2)}`],
+                    ['Total Deducciones:', `Q ${currentPayroll.totals.totalDeductions.toFixed(2)}`],
+                    ['Total a Pagar (Neto):', `Q ${currentPayroll.totals.totalNet.toFixed(2)}`]
+                ];
+                
+                totalsData.forEach(([label, value], index) => {
+                    doc.text(label, 30, yPos + (index * 6));
+                    doc.text(value, pageWidth - 30, yPos + (index * 6), { align: 'right' });
+                });
+                
+                yPos += (totalsData.length * 6) + 15;
+                
+                // Firma
+                doc.setFontSize(10);
+                doc.text('_________________________', 50, yPos);
+                doc.text('_________________________', pageWidth - 50, yPos, { align: 'right' });
+                
+                yPos += 5;
+                doc.text('Responsable de Planilla', 50, yPos);
+                doc.text('Autorizado por', pageWidth - 50, yPos, { align: 'right' });
+                
+                // Pie de página
+                doc.setFontSize(8);
+                doc.setTextColor(100, 100, 100);
+                doc.text('Barrio el Centro Casco Urbano Quesada, Jutiapa | Tel: 55606172 | Email: multiserviciosdeguatemal@gmail.com', 
+                        pageWidth / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+                
+                // Guardar PDF
+                doc.save(`planilla_${currentPayroll.id}.pdf`);
+                
+                // Guardar referencia en historial
+                const pdfEntry = {
+                    id: `PDF-${currentPayroll.id}`,
+                    type: 'pdf',
+                    filename: `planilla_${currentPayroll.id}.pdf`,
+                    payrollId: currentPayroll.id,
+                    savedAt: new Date().toISOString(),
+                    size: 'Estimado: 200KB'
+                };
+                
+                payrollHistory.unshift(pdfEntry);
+                localStorage.setItem('payrollHistory', JSON.stringify(payrollHistory));
+                updateHistoryCounts();
+                
+                hideLoading();
+                showNotification('success', 'Reporte PDF generado y guardado');
+                
+            } catch (error) {
+                hideLoading();
+                showNotification('error', 'Error al generar PDF: ' + error.message);
+                console.error('PDF Generation Error:', error);
+            }
+        }
+
+        // Imprimir planilla
+        function printPayroll() {
+            // Crear ventana de impresión
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Planilla ${currentPayroll.id}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .company-name { font-size: 24px; color: #1a237e; font-weight: bold; }
+                        .slogan { font-size: 14px; color: #d4a017; font-style: italic; }
+                        .payroll-title { text-align: center; font-size: 18px; margin: 20px 0; }
+                        .payroll-info { margin-bottom: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th { background: #1a237e; color: white; padding: 10px; text-align: left; }
+                        td { padding: 8px; border: 1px solid #ddd; }
+                        .totals { margin-top: 30px; font-weight: bold; }
+                        .signature { margin-top: 50px; display: flex; justify-content: space-between; }
+                        .footer { margin-top: 50px; font-size: 10px; color: #666; text-align: center; }
+                        @media print {
+                            .no-print { display: none; }
+                            body { margin: 0; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div class="company-name">CONSTRUCTORA WM/M&S</div>
+                        <div class="slogan">EDIFICANDO EL FUTURO</div>
+                    </div>
+                    
+                    <div class="payroll-title">PLANILLA DE PAGO</div>
+                    
+                    <div class="payroll-info">
+                        <div><strong>Número:</strong> ${currentPayroll.id}</div>
+                        <div><strong>Período:</strong> ${currentPayroll.period} (Del ${formatDateDisplay(currentPayroll.startDate)} al ${formatDateDisplay(currentPayroll.endDate)})</div>
+                        <div><strong>Proyecto:</strong> ${currentPayroll.project || 'No especificado'}</div>
+                        <div><strong>Generado:</strong> ${formatDateDisplay(new Date())}</div>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Puesto</th>
+                                <th>Días</th>
+                                <th>H. Extra</th>
+                                <th>S. Diario</th>
+                                <th>Bruto</th>
+                                <th>Deduc.</th>
+                                <th>Neto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${currentPayroll.workers.map((worker, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${worker.id}</td>
+                                    <td>${worker.name}</td>
+                                    <td>${worker.position}</td>
+                                    <td>${worker.daysWorked}</td>
+                                    <td>${worker.extraHours}</td>
+                                    <td>Q ${worker.dailySalary.toFixed(2)}</td>
+                                    <td>Q ${worker.grossSalary.toFixed(2)}</td>
+                                    <td>Q ${worker.deductions.toFixed(2)}</td>
+                                    <td><strong>Q ${worker.netSalary.toFixed(2)}</strong></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    
+                    <div class="totals">
+                        <div>Total Trabajadores: ${currentPayroll.totals.totalWorkers}</div>
+                        <div>Total Horas: ${currentPayroll.totals.totalHours.toFixed(1)}</div>
+                        <div>Total Bruto: Q ${currentPayroll.totals.totalGross.toFixed(2)}</div>
+                        <div>Total Deducciones: Q ${currentPayroll.totals.totalDeductions.toFixed(2)}</div>
+                        <div>Total a Pagar (Neto): <strong>Q ${currentPayroll.totals.totalNet.toFixed(2)}</strong></div>
+                    </div>
+                    
+                    <div class="signature">
+                        <div>
+                            <div style="border-top: 1px solid #000; width: 200px; margin-top: 50px;"></div>
+                            <div>Responsable de Planilla</div>
+                        </div>
+                        <div>
+                            <div style="border-top: 1px solid #000; width: 200px; margin-top: 50px;"></div>
+                            <div>Autorizado por</div>
+                        </div>
+                    </div>
+                    
+                    <div class="footer">
+                        Barrio el Centro Casco Urbano Quesada, Jutiapa | Tel: 55606172 | Email: multiserviciosdeguatemal@gmail.com
+                    </div>
+                    
+                    <div class="no-print" style="margin-top: 20px; text-align: center;">
+                        <button onclick="window.print()">Imprimir</button>
+                        <button onclick="window.close()">Cerrar</button>
+                    </div>
+                    
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                        }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        // Sincronizar planilla
+        function syncPayroll() {
+            showTab('sync');
+            showNotification('info', 'Configura la sincronización en esta pestaña');
+        }
+
+        // Mostrar/ocultar pestañas
+        function showTab(tabName) {
+            // Ocultar todas las pestañas
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Mostrar pestaña seleccionada
+            document.querySelector(`.tab[onclick*="${tabName}"]`).classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        // Funciones auxiliares
+        function generatePayrollId() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            return `PL-${year}${month}${day}-${random}`;
+        }
+
+        function formatDate(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            return d.toISOString().split('T')[0];
+        }
+
+        function formatDateDisplay(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-GT', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+
+        function getDailySalaryByPosition(position) {
+            const salaryMap = {
+                'supervisor': 250.00,
+                'encargado': 250.00,
+                'maestro': 200.00,
+                'albañil': 175.00,
+                'ayudante': 125.00,
+                'peon': 100.00,
+                'otros': 150.00
+            };
+            return salaryMap[position.toLowerCase()] || 150.00;
+        }
+
+        function calculateDeductions(grossSalary) {
+            // Simulación de deducciones (IGSS, ISR, etc.)
+            const igss = grossSalary * 0.0483; // 4.83% IGSS
+            const isr = grossSalary > 300 ? (grossSalary - 300) * 0.05 : 0; // 5% ISR sobre excedente
+            return igss + isr;
+        }
+
+        // Actualizar indicador de sincronización
+        function updateSyncIndicator() {
+            const indicator = document.getElementById('syncIndicator');
+            const statusText = document.getElementById('syncStatusText');
+            const lastSync = document.getElementById('lastSyncTime');
+            
+            if (currentPayroll.syncStatus === 'synced') {
+                indicator.className = 'sync-indicator synced';
+                statusText.textContent = 'Sincronizado';
+                lastSync.textContent = 'Última sync: ' + new Date().toLocaleTimeString('es-GT');
+            } else if (currentPayroll.syncStatus === 'pending') {
+                indicator.className = 'sync-indicator pending';
+                statusText.textContent = 'Pendiente de sincronizar';
+                lastSync.textContent = 'Cambios no guardados en la nube';
+            } else {
+                indicator.className = 'sync-indicator error';
+                statusText.textContent = 'Error de sincronización';
+                lastSync.textContent = 'Revisar configuración';
+            }
+        }
+
+        // Cargar proyectos
+        function loadProjects() {
+            const projects = JSON.parse(localStorage.getItem('projects')) || [];
+            const select = document.getElementById('projectSelect');
+            
+            select.innerHTML = '<option value="">Seleccionar proyecto...</option>';
+            projects.forEach(project => {
+                if (project.status === 'active') {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = `${project.name} (${project.id})`;
+                    select.appendChild(option);
+                }
+            });
+        }
+
+        // Cargar trabajadores desde proyecto
+        function loadWorkersFromProject() {
+            const projectId = document.getElementById('projectSelect').value;
+            if (!projectId) {
+                showNotification('error', 'Seleccione un proyecto primero');
+                return;
+            }
+            
+            // Obtener trabajadores del proyecto
+            const workers = JSON.parse(localStorage.getItem('projectWorkers')) || [];
+            const projectWorkers = workers.filter(w => w.project === projectId);
+            
+            // Limpiar tabla
+            document.getElementById('manualPayrollTableBody').innerHTML = '';
+            manualEntries = [];
+            
+            // Agregar trabajadores
+            projectWorkers.forEach(worker => {
+                addWorkerRow();
+                const index = manualEntries.length - 1;
+                
+                // Llenar datos
+                const row = document.querySelector(`#manualPayrollTableBody tr:nth-child(${index + 1})`);
+                if (row) {
+                    row.querySelector('input[placeholder="ID Trabajador"]').value = worker.id;
+                    row.querySelector('input[placeholder="Nombre completo"]').value = worker.name;
+                    row.querySelector('select').value = worker.position;
+                    
+                    updateManualWorker(index, 'id', worker.id);
+                    updateManualWorker(index, 'name', worker.name);
+                    updateManualWorker(index, 'position', worker.position);
+                    updateDailySalary(index, worker.position);
+                    calculateManualRow(index);
+                }
+            });
+            
+            showNotification('success', `${projectWorkers.length} trabajadores cargados del proyecto`);
+        }
+
+        // Limpiar formulario manual
+        function clearManualForm() {
+            if (confirm('¿Está seguro de limpiar el formulario? Se perderán los datos no guardados.')) {
+                document.getElementById('manualPayrollTableBody').innerHTML = '';
+                manualEntries = [];
+                addWorkerRow(); // Agregar una fila inicial
+            }
+        }
+
+        // Actualizar contadores del historial
+        function updateHistoryCounts() {
+            const allCount = payrollHistory.length;
+            const localCount = payrollHistory.filter(item => item.type === 'local').length;
+            const syncedCount = payrollHistory.filter(item => item.syncStatus === 'synced').length;
+            const pdfCount = payrollHistory.filter(item => item.type === 'pdf').length;
+            
+            document.getElementById('countAll').textContent = `${allCount} planillas`;
+            document.getElementById('countLocal').textContent = `${localCount} planillas`;
+            document.getElementById('countSynced').textContent = `${syncedCount} planillas`;
+            document.getElementById('countPDF').textContent = `${pdfCount} archivos`;
+        }
+
+        // Mostrar historial
+        function displayHistory() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            payrollHistory.forEach((item, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                let typeIcon = 'fa-file-alt';
+                let typeColor = '#4caf50';
+                
+                if (item.type === 'pdf') {
+                    typeIcon = 'fa-file-pdf';
+                    typeColor = '#f44336';
+                } else if (item.syncStatus === 'synced') {
+                    typeIcon = 'fa-cloud';
+                    typeColor = '#2196f3';
+                }
+                
+                historyItem.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas ${typeIcon}" style="color: ${typeColor}; font-size: 1.2rem;"></i>
+                        <div>
+                            <div style="font-weight: bold;">${item.id || item.filename}</div>
+                            <div style="font-size: 0.8rem; color: #ccc;">
+                                ${item.type === 'pdf' ? 'PDF Generado' : 'Planilla'} - 
+                                ${new Date(item.savedAt).toLocaleDateString('es-GT')}
+                                ${item.project ? ` - ${item.project}` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="history-actions">
+                        ${item.type === 'pdf' ? 
+                            `<button class="btn btn-sm btn-danger" onclick="downloadPDF('${item.filename}')">
+                                <i class="fas fa-download"></i>
+                            </button>` :
+                            `<button class="btn btn-sm btn-primary" onclick="loadFromHistory(${index})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="exportHistoryItem(${index})">
+                                <i class="fas fa-download"></i>
+                            </button>`
+                        }
+                        <button class="btn btn-sm btn-danger" onclick="deleteHistoryItem(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        // Filtrar historial
+        function filterHistory(filter) {
+            // Actualizar selección visual
+            document.querySelectorAll('.format-option').forEach(opt => opt.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            
+            // En una implementación completa, aquí se filtraría el historial
+            displayHistory(); // Por ahora mostramos todo
+        }
+
+        // Cargar desde historial
+        function loadFromHistory(index) {
+            const item = payrollHistory[index];
+            if (item.type === 'pdf') {
+                showNotification('info', 'Este es un archivo PDF. Use el botón de descarga.');
+                return;
+            }
+            
+            currentPayroll = { ...item };
+            updatePayrollUI();
+            showTab('current');
+            showNotification('success', 'Planilla cargada desde historial');
+        }
+
+        // Exportar item del historial
+        function exportHistoryItem(index) {
+            const item = payrollHistory[index];
+            if (item.type === 'pdf') {
+                downloadPDF(item.filename);
+                return;
+            }
+            
+            const dataStr = JSON.stringify(item, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const exportFileDefaultName = `planilla_historial_${item.id}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showNotification('success', 'Planilla exportada desde historial');
+        }
+
+        // Eliminar item del historial
+        function deleteHistoryItem(index) {
+            if (confirm('¿Está seguro de eliminar este registro del historial?')) {
+                payrollHistory.splice(index, 1);
+                localStorage.setItem('payrollHistory', JSON.stringify(payrollHistory));
+                displayHistory();
+                updateHistoryCounts();
+                showNotification('success', 'Registro eliminado del historial');
+            }
+        }
+
+        // Descargar PDF
+        function downloadPDF(filename) {
+            // En una implementación real, aquí se obtendría el PDF del almacenamiento
+            showNotification('info', 'En una implementación completa, aquí se descargaría el PDF guardado');
+        }
+
+        // Funciones de sincronización
+        function loadSyncSettings() {
+            syncSettings = JSON.parse(localStorage.getItem('syncSettings')) || {
+                service: 'local_only',
+                frequency: 'manual',
+                apiKey: '',
+                lastSync: null
+            };
+            
+            document.getElementById('syncService').value = syncSettings.service;
+            document.getElementById('syncFrequency').value = syncSettings.frequency;
+            document.getElementById('apiKey').value = syncSettings.apiKey;
+        }
+
+        function saveSyncSettings() {
+            syncSettings.service = document.getElementById('syncService').value;
+            syncSettings.frequency = document.getElementById('syncFrequency').value;
+            syncSettings.apiKey = document.getElementById('apiKey').value;
+            
+            localStorage.setItem('syncSettings', JSON.stringify(syncSettings));
+            showNotification('success', 'Configuración de sincronización guardada');
+        }
+
+        function testConnection() {
+            showLoading('Probando conexión...');
+            
+            setTimeout(() => {
+                hideLoading();
+                showNotification('success', 'Conexión probada exitosamente');
+            }, 1500);
+        }
+
+        function syncToCloud() {
+            showSyncProgress();
+            
+            // Simular sincronización
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                updateSyncProgress(progress);
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    currentPayroll.syncStatus = 'synced';
+                    syncSettings.lastSync = new Date().toISOString();
+                    
+                    localStorage.setItem('currentPayroll', JSON.stringify(currentPayroll));
+                    localStorage.setItem('syncSettings', JSON.stringify(syncSettings));
+                    
+                    updateSyncIndicator();
+                    showNotification('success', 'Planilla sincronizada exitosamente con la nube');
+                    hideSyncProgress();
+                }
+            }, 300);
+        }
+
+        function showSyncProgress() {
+            document.getElementById('syncProgress').style.display = 'block';
+        }
+
+        function hideSyncProgress() {
+            document.getElementById('syncProgress').style.display = 'none';
+        }
+
+        function updateSyncProgress(percent) {
+            document.getElementById('syncPercent').textContent = percent + '%';
+            document.getElementById('syncProgressBar').style.width = percent + '%';
+        }
+
+        // Funciones de utilidad
+        function showLoading(message) {
+            // Implementar según tu sistema
+            console.log('Loading:', message);
+        }
+
+        function hideLoading() {
+            // Implementar según tu sistema
+            console.log('Loading hidden');
+        }
+
+        function showNotification(type, message) {
+            // Implementar según tu sistema
+            alert(type.toUpperCase() + ': ' + message);
+        }
+    </script>
+</body>
+</html>
